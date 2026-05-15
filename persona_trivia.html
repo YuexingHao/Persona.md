@@ -6,210 +6,334 @@
   <title>Compete With Your Persona</title>
   <style>
     :root {
-      --bg: #f6f7fb;
-      --panel: #ffffff;
-      --ink: #18202a;
-      --muted: #566273;
-      --line: #d7deea;
-      --accent: #0d6efd;
-      --accent-soft: #e9f1ff;
-      --good: #0a7f49;
-      --bad: #b42318;
+      --bg0: #0f172a;
+      --bg1: #111827;
+      --bg2: #172554;
+      --card: rgba(255, 255, 255, 0.92);
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --primary: #2563eb;
+      --primary-2: #1d4ed8;
+      --good: #15803d;
+      --warn: #b45309;
+      --bad: #b91c1c;
+      --soft: #eff6ff;
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      background: linear-gradient(180deg, #f1f5ff 0%, var(--bg) 35%, var(--bg) 100%);
-      color: var(--ink);
-      font-family: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #e2e8f0;
+      font-family: "Space Grotesk", "Avenir Next", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(900px 500px at 8% -5%, #1d4ed8 0%, transparent 60%),
+                  radial-gradient(900px 500px at 92% -5%, #7c3aed 0%, transparent 60%),
+                  linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 45%, var(--bg0) 100%);
+      min-height: 100vh;
     }
+
+    .aurora {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(600px 300px at 25% 20%, rgba(37, 99, 235, 0.18), transparent 65%),
+                  radial-gradient(600px 300px at 75% 15%, rgba(124, 58, 237, 0.18), transparent 65%);
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift {
+      from { transform: translateY(-8px) scale(1); }
+      to { transform: translateY(10px) scale(1.02); }
+    }
+
     .wrap {
-      max-width: 920px;
+      position: relative;
+      max-width: 980px;
       margin: 0 auto;
-      padding: 20px 16px 56px;
+      padding: 22px 16px 52px;
+      z-index: 1;
     }
+
     .hero, .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      box-shadow: 0 8px 22px rgba(12, 25, 48, 0.06);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.56);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 12px 30px rgba(2, 6, 23, 0.32);
     }
+
     .hero { padding: 18px; }
+
     h1 {
       margin: 0;
-      font-size: 1.58rem;
-      line-height: 1.2;
+      font-size: 1.65rem;
       letter-spacing: -0.01em;
+      color: #f8fafc;
     }
+
     .sub {
       margin-top: 8px;
-      color: var(--muted);
-      font-size: 0.95rem;
+      color: #cbd5e1;
+      font-size: 0.96rem;
+      line-height: 1.5;
     }
+
     .meta {
       margin-top: 12px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      font-size: 0.8rem;
-      color: var(--muted);
     }
+
     .pill {
-      border: 1px solid var(--line);
+      border: 1px solid rgba(148, 163, 184, 0.45);
       border-radius: 999px;
       padding: 4px 10px;
-      background: #fafcff;
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.55);
     }
+
+    .progress-wrap {
+      margin-top: 14px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.28);
+      overflow: hidden;
+    }
+
+    .progress > div {
+      height: 100%;
+      width: 0%;
+      transition: width 260ms ease;
+      background: linear-gradient(90deg, #38bdf8 0%, #2563eb 70%, #7c3aed 100%);
+    }
+
     .panel {
       margin-top: 14px;
-      padding: 14px;
+      padding: 16px;
     }
+
     .q {
-      padding: 12px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fcfdff;
+      border-radius: 14px;
+      background: var(--card);
+      color: var(--ink);
+      padding: 14px;
+      animation: popIn 220ms ease;
     }
-    .q + .q { margin-top: 10px; }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     .qhead {
-      font-weight: 600;
-      font-size: 0.97rem;
-      margin-bottom: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.45;
+      margin-bottom: 10px;
     }
+
     .opts {
       display: grid;
-      gap: 8px;
       grid-template-columns: 1fr;
+      gap: 10px;
     }
+
     label.opt {
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      padding: 8px 10px;
       display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: flex-start;
-      cursor: pointer;
-      transition: border-color 120ms ease, background 120ms ease;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px 12px;
       background: #fff;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     }
+
     label.opt:hover {
-      border-color: #b7c7ea;
-      background: #f7faff;
+      transform: translateY(-1px);
+      border-color: #93c5fd;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.12);
     }
-    input[type="radio"] { margin-top: 2px; }
+
+    label.opt input { margin-top: 3px; }
+
     .controls {
-      margin-top: 14px;
+      margin-top: 13px;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 9px;
       align-items: center;
     }
+
     button {
-      border: 1px solid #0c58cf;
-      background: var(--accent);
-      color: #fff;
+      border: 1px solid #1d4ed8;
       border-radius: 10px;
       padding: 9px 13px;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 0.9rem;
       cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+      transition: transform 100ms ease, background 120ms ease;
     }
+
+    button:hover { transform: translateY(-1px); background: var(--primary-2); }
+    button:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+
     button.secondary {
       background: #fff;
-      color: var(--ink);
+      color: #0f172a;
       border-color: var(--line);
     }
-    .status { color: var(--muted); font-size: 0.92rem; }
-    .reveal {
-      margin-top: 10px;
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      padding: 10px;
-      background: var(--accent-soft);
-      display: none;
-      font-size: 0.92rem;
-    }
-    .reveal strong { font-weight: 700; }
-    .result {
-      margin-top: 14px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fff;
-      padding: 12px;
-      display: none;
-    }
-    .scoreboard {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .box {
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      padding: 8px 10px;
-      background: #fbfcff;
-    }
-    .box .k { font-size: 0.78rem; color: var(--muted); }
-    .box .v { font-size: 1.05rem; font-weight: 700; }
-    .win { color: var(--good); }
-    .lose { color: var(--bad); }
-    .detail {
-      margin-top: 10px;
-      max-height: 280px;
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 8px;
-      background: #fcfdff;
+
+    .status {
+      color: #e2e8f0;
       font-size: 0.9rem;
+      margin-left: 2px;
     }
-    .detail .row + .row { margin-top: 6px; }
-    .update-box {
+
+    .reveal {
+      margin-top: 11px;
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      border-radius: 12px;
+      padding: 11px;
+      background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
+      color: #0f172a;
+      display: none;
+      line-height: 1.45;
+    }
+
+    .result {
       margin-top: 12px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px;
-      background: #fbfcff;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+      color: #0f172a;
       display: none;
     }
-    .update-box h3 {
-      margin: 0 0 8px;
-      font-size: 0.98rem;
+
+    .ending {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px;
+      margin-bottom: 10px;
+      background: #f8fafc;
     }
+
+    .ending.win { border-color: #86efac; background: #f0fdf4; }
+    .ending.neutral { border-color: #fde68a; background: #fffbeb; }
+    .ending.lose { border-color: #fecaca; background: #fef2f2; }
+
+    .ending h3 {
+      margin: 0 0 5px;
+      font-size: 1.03rem;
+    }
+
+    .ending p {
+      margin: 0;
+      line-height: 1.45;
+      font-size: 0.93rem;
+    }
+
+    .scoreboard {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #f8fafc;
+    }
+
+    .box .k { color: var(--muted); font-size: 0.77rem; }
+    .box .v { font-weight: 800; font-size: 1.07rem; }
+
+    .detail {
+      margin-top: 10px;
+      max-height: 260px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 8px;
+      background: #f8fafc;
+      font-size: 0.88rem;
+    }
+
+    .detail .row + .row { margin-top: 6px; }
+
+    .update-box {
+      margin-top: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.5);
+      display: none;
+      color: #e2e8f0;
+    }
+
+    .update-box h3 { margin: 0 0 8px; font-size: 0.98rem; }
+
     .update-box textarea {
       width: 100%;
       min-height: 180px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(148, 163, 184, 0.45);
       border-radius: 8px;
       padding: 9px;
+      resize: vertical;
       font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
       font-size: 0.82rem;
-      line-height: 1.45;
-      resize: vertical;
-      background: #fff;
-      color: var(--ink);
+      background: #0b1222;
+      color: #e2e8f0;
     }
+
     .update-actions {
       margin-top: 8px;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
-    a { color: var(--accent); }
+
+    a { color: #93c5fd; }
+
     @media (min-width: 760px) {
       .opts { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
+  <div class="aurora"></div>
   <main class="wrap">
     <section class="hero">
       <h1>Compete With Your Persona</h1>
-      <div class="sub">15 binary trivia questions generated from <code>Persona.md</code>. You answer. Persona-agent answers from profile rules. Highest score wins.</div>
+      <div class="sub">Answer one scenario at a time. After each pick, Persona.md predicts your choice and explains why. Final result decides whether you outplayed your profile, or your profile outplayed you.</div>
       <div class="meta">
-        <span class="pill">questions: 15</span>
-        <span class="pill">options each: 2</span>
-        <span class="pill">source: persona/Persona.md</span>
+        <span class="pill">15 scenario rounds</span>
+        <span class="pill">2 options each</span>
+        <span class="pill">persona-prediction duel</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Progress</span><span id="progressText">Q1 / 15</span></div>
+        <div class="progress"><div id="progressFill"></div></div>
       </div>
     </section>
 
@@ -233,9 +357,7 @@
       </div>
     </section>
 
-    <p class="sub" style="margin-top:10px;">
-      Back to <a href="./index.html">Persona Index</a>
-    </p>
+    <p class="sub" style="margin-top:10px;">Back to <a href="./index.html">Persona Index</a></p>
   </main>
 
   <script>
@@ -257,7 +379,6 @@
       { q: "An assistant explanation sounds slightly off and could mislead next steps. What is most consistent with your observed follow-up pattern?", o: ["Request correction quickly and tighten the answer", "Postpone correction and move on to another task"], key: 0, persona: 0, why: "Persona interaction history shows immediate correction requests." }
     ];
 
-    // Persona-agent predicts the user's likely answer from Persona.md signals.
     const AGENT = QUESTIONS.map(q => q.persona);
 
     const quiz = document.getElementById("quiz");
@@ -270,8 +391,17 @@
     const downloadUpdateBtn = document.getElementById("downloadUpdateBtn");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+
     const userAnswers = Array(QUESTIONS.length).fill(null);
     let current = 0;
+
+    function renderProgress() {
+      const ratio = ((current + 1) / QUESTIONS.length) * 100;
+      progressFill.style.width = `${ratio}%`;
+      progressText.textContent = `Q${current + 1} / ${QUESTIONS.length}`;
+    }
 
     function render() {
       const item = QUESTIONS[current];
@@ -296,7 +426,7 @@
       quiz.querySelectorAll('input[name="current-q"]').forEach(el => {
         el.addEventListener("change", () => {
           userAnswers[current] = Number(el.value);
-          statusEl.textContent = `Question ${current + 1}/${QUESTIONS.length}`;
+          statusEl.textContent = `Locked answer for Question ${current + 1}.`;
           showReveal();
         });
       });
@@ -310,6 +440,7 @@
       revealEl.innerHTML = "";
       updateBoxEl.style.display = "none";
       updateTextEl.value = "";
+      renderProgress();
     }
 
     function showReveal() {
@@ -320,13 +451,42 @@
       revealEl.innerHTML = `
         <strong>Persona.md predicts:</strong> ${item.o[pred]}<br>
         <strong>Rationale:</strong> ${item.why}<br>
-        <strong>Match with your answer:</strong> ${match ? "Yes" : "No"}
+        <strong>Prediction match:</strong> ${match ? "Yes, your choice matches persona prediction." : "No, you surprised your persona this round."}
       `;
       revealEl.style.display = "block";
     }
 
     function allAnswered() {
       return userAnswers.every(v => v !== null);
+    }
+
+    function endingScenario(userScore, agentPredictScore) {
+      if (userScore < 10) {
+        return {
+          cls: "lose",
+          title: "Persona Arena Result: You Lost To Your Self",
+          text: "You lost to your self! Try to RLYF = Reinforcement Learning with Your Feedback!! Your answers reveal meaningful drift from your current profile. Feed this back into Persona.md and run the duel again."
+        };
+      }
+      if (userScore >= 13 && userScore >= agentPredictScore) {
+        return {
+          cls: "win",
+          title: "Persona Arena Result: Mind-Meld Victory",
+          text: "Strong alignment. You and Persona.md are operating in sync. Your behavior profile is sharp and internally consistent."
+        };
+      }
+      if (userScore >= 10 && userScore < 13) {
+        return {
+          cls: "neutral",
+          title: "Persona Arena Result: Competitive Draw",
+          text: "Good consistency with a few strategic mismatches. This is the best zone for profile refinement and targeted updates."
+        };
+      }
+      return {
+        cls: "neutral",
+        title: "Persona Arena Result: Edge Case",
+        text: "Mixed signals detected. Use the generated update proposal to consolidate your latest preferences."
+      };
     }
 
     function buildPersonaUpdateText(agentPredictScore, userScore) {
@@ -383,7 +543,7 @@
       lines.push("");
       lines.push("## Suggested Changelog Entry");
       lines.push(`- ${new Date().toISOString().slice(0, 10)}: Updated preferences using persona trivia response profile (${agentPredictScore}/${total} prediction match).`);
-      return lines.join("\\n");
+      return lines.join("\n");
     }
 
     function duel() {
@@ -403,21 +563,21 @@
         if (AGENT[i] === key[i]) agentConsistency += 1;
       }
 
-      let winner = "Tie";
-      let cls = "";
-      if (userScore > agentPredictScore) { winner = "User Wins"; cls = "win"; }
-      else if (userScore < agentPredictScore) { winner = "Persona Agent Wins"; cls = "lose"; }
+      const scene = endingScenario(userScore, agentPredictScore);
 
       const rows = QUESTIONS.map((q, i) => {
         const u = q.o[userAnswers[i]];
         const a = q.o[AGENT[i]];
         const okU = userAnswers[i] === q.key ? "✓" : "✗";
         const okA = AGENT[i] === userAnswers[i] ? "✓" : "✗";
-        return `<div class=\"row\">Q${i + 1}: User ${okU} (${u}) | Persona Prediction ${okA} (${a})</div>`;
+        return `<div class="row">Q${i + 1}: User ${okU} (${u}) | Persona Prediction ${okA} (${a})</div>`;
       }).join("");
 
       resultEl.innerHTML = `
-        <div><strong class="${cls}">${winner}</strong></div>
+        <div class="ending ${scene.cls}">
+          <h3>${scene.title}</h3>
+          <p>${scene.text}</p>
+        </div>
         <div class="scoreboard">
           <div class="box"><div class="k">User Persona-Consistency</div><div class="v">${userScore}/15</div></div>
           <div class="box"><div class="k">Persona Prediction Accuracy</div><div class="v">${agentPredictScore}/15</div></div>
@@ -455,6 +615,7 @@
       current = 0;
       for (let i = 0; i < userAnswers.length; i += 1) userAnswers[i] = null;
       render();
+      statusEl.textContent = "Quiz reset.";
     });
 
     copyUpdateBtn.addEventListener("click", async () => {
@@ -470,13 +631,14 @@
     downloadUpdateBtn.addEventListener("click", () => {
       if (!updateTextEl.value) return;
       const blob = new Blob([updateTextEl.value], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
+      a.href = url;
       a.download = `Persona_Update_Proposal_${new Date().toISOString().slice(0, 10)}.md`;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(a.href);
+      URL.revokeObjectURL(url);
       statusEl.textContent = "Downloaded Persona update proposal.";
     });
 
