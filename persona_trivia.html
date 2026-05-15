@@ -119,6 +119,16 @@
       border-color: var(--line);
     }
     .status { color: var(--muted); font-size: 0.92rem; }
+    .reveal {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px;
+      background: var(--accent-soft);
+      display: none;
+      font-size: 0.92rem;
+    }
+    .reveal strong { font-weight: 700; }
     .result {
       margin-top: 14px;
       border: 1px solid var(--line);
@@ -174,6 +184,7 @@
 
     <section class="panel">
       <form id="quiz"></form>
+      <div id="reveal" class="reveal"></div>
       <div class="controls">
         <button id="prevBtn" class="secondary" type="button">Previous</button>
         <button id="nextBtn" type="button">Next Question</button>
@@ -190,29 +201,30 @@
 
   <script>
     const QUESTIONS = [
-      { q: "For a straightforward request, what is preferred?", o: ["Execute directly", "Discuss at length first"], key: 0 },
-      { q: "When data integrity is involved, what matters more?", o: ["Explicit double-checking", "Fast approximate output"], key: 0 },
-      { q: "Preferred status update format?", o: ["Compact bullets with IDs and reasons", "Long narrative paragraph"], key: 0 },
-      { q: "How should artifact naming be handled?", o: ["Deterministic date/version anchors", "Ad-hoc names"], key: 0 },
-      { q: "Decision style under pressure?", o: ["Accuracy first, then speed", "Speed first, then accuracy"], key: 0 },
-      { q: "If a mismatch appears, what next?", o: ["Investigate root cause", "Ignore if output mostly looks fine"], key: 0 },
-      { q: "For derivative datasets, schema approach?", o: ["Preserve schema consistency", "Change columns as convenient"], key: 0 },
-      { q: "When request is ambiguous, default behavior?", o: ["Safe default + explicit assumptions", "Wait indefinitely for clarification"], key: 0 },
-      { q: "Acceptance criterion for data tasks?", o: ["Exact-match checks + explicit confirmation", "Single quick spot-check"], key: 0 },
-      { q: "Preferred collaboration tone?", o: ["Minimal fluff, high signal", "Verbose motivational style"], key: 0 },
-      { q: "Queue monitoring detail level?", o: ["Include reason tags like Priority/Resources", "Only report pending/running"], key: 0 },
-      { q: "What should data-task reports include?", o: ["Join key, row counts, mismatches, affected IDs", "Only final output path"], key: 0 },
-      { q: "Most aligned domain focus?", o: ["Dataset curation and label QC", "Experimental visual theming"], key: 0 },
-      { q: "Model workflow preference?", o: ["Comparative pipelines across model families", "Single model only"], key: 0 },
-      { q: "If explanation seems wrong, likely follow-up?", o: ["Request correction quickly", "Postpone correction"], key: 0 }
+      { q: "For a straightforward request, what is preferred?", o: ["Execute directly", "Discuss at length first"], key: 0, persona: 0, why: "Persona notes direct execution over discussion." },
+      { q: "When data integrity is involved, what matters more?", o: ["Explicit double-checking", "Fast approximate output"], key: 0, persona: 0, why: "Persona repeatedly prioritizes explicit validation." },
+      { q: "Preferred status update format?", o: ["Compact bullets with IDs and reasons", "Long narrative paragraph"], key: 0, persona: 0, why: "Status rule says compact list with ID -> state -> reason." },
+      { q: "How should artifact naming be handled?", o: ["Deterministic date/version anchors", "Ad-hoc names"], key: 0, persona: 0, why: "Persona emphasizes deterministic naming and traceability." },
+      { q: "Decision style under pressure?", o: ["Accuracy first, then speed", "Speed first, then accuracy"], key: 0, persona: 0, why: "Working style states accuracy first, then speed." },
+      { q: "If a mismatch appears, what next?", o: ["Investigate root cause", "Ignore if output mostly looks fine"], key: 0, persona: 0, why: "Non-negotiable: investigate mismatch root cause before finalize." },
+      { q: "For derivative datasets, schema approach?", o: ["Preserve schema consistency", "Change columns as convenient"], key: 0, persona: 0, why: "Persona requires schema consistency for derivatives." },
+      { q: "When request is ambiguous, default behavior?", o: ["Safe default + explicit assumptions", "Wait indefinitely for clarification"], key: 0, persona: 0, why: "Personalization rule: safe default and report assumptions." },
+      { q: "Acceptance criterion for data tasks?", o: ["Exact-match checks + explicit confirmation", "Single quick spot-check"], key: 0, persona: 0, why: "Acceptance pattern calls for exact-match confirmation." },
+      { q: "Preferred collaboration tone?", o: ["Minimal fluff, high signal", "Verbose motivational style"], key: 0, persona: 0, why: "Persona collaboration style is concise and high signal." },
+      { q: "Queue monitoring detail level?", o: ["Include reason tags like Priority/Resources", "Only report pending/running"], key: 0, persona: 0, why: "Persona asks to include pending reasons like Priority/Resources." },
+      { q: "What should data-task reports include?", o: ["Join key, row counts, mismatches, affected IDs", "Only final output path"], key: 0, persona: 0, why: "Personalization rule defines those exact report fields." },
+      { q: "Most aligned domain focus?", o: ["Dataset curation and label QC", "Experimental visual theming"], key: 0, persona: 0, why: "Domain priorities center on dataset curation and quality control." },
+      { q: "Model workflow preference?", o: ["Comparative pipelines across model families", "Single model only"], key: 0, persona: 0, why: "Persona focuses on cross-model comparative pipelines." },
+      { q: "If explanation seems wrong, likely follow-up?", o: ["Request correction quickly", "Postpone correction"], key: 0, persona: 0, why: "Interaction pattern shows immediate correction requests." }
     ];
 
-    // Persona-agent answers are generated from Persona.md rules. Here they map 1:1 to key.
-    const AGENT = QUESTIONS.map(q => q.key);
+    // Persona-agent predicts the user's likely answer from Persona.md signals.
+    const AGENT = QUESTIONS.map(q => q.persona);
 
     const quiz = document.getElementById("quiz");
     const statusEl = document.getElementById("status");
     const resultEl = document.getElementById("result");
+    const revealEl = document.getElementById("reveal");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const userAnswers = Array(QUESTIONS.length).fill(null);
@@ -242,6 +254,7 @@
         el.addEventListener("change", () => {
           userAnswers[current] = Number(el.value);
           statusEl.textContent = `Question ${current + 1}/${QUESTIONS.length}`;
+          showReveal();
         });
       });
 
@@ -250,6 +263,21 @@
       statusEl.textContent = `Question ${current + 1}/${QUESTIONS.length}`;
       resultEl.style.display = "none";
       resultEl.innerHTML = "";
+      revealEl.style.display = "none";
+      revealEl.innerHTML = "";
+    }
+
+    function showReveal() {
+      if (userAnswers[current] === null) return;
+      const item = QUESTIONS[current];
+      const pred = AGENT[current];
+      const match = userAnswers[current] === pred;
+      revealEl.innerHTML = `
+        <strong>Persona.md predicts:</strong> ${item.o[pred]}<br>
+        <strong>Rationale:</strong> ${item.why}<br>
+        <strong>Match with your answer:</strong> ${match ? "Yes" : "No"}
+      `;
+      revealEl.style.display = "block";
     }
 
     function allAnswered() {
@@ -264,34 +292,34 @@
 
       const key = QUESTIONS.map(q => q.key);
       let userScore = 0;
-      let agentScore = 0;
-      let alignment = 0;
+      let agentPredictScore = 0;
+      let agentConsistency = 0;
 
       for (let i = 0; i < QUESTIONS.length; i += 1) {
         if (userAnswers[i] === key[i]) userScore += 1;
-        if (AGENT[i] === key[i]) agentScore += 1;
-        if (userAnswers[i] === AGENT[i]) alignment += 1;
+        if (userAnswers[i] === AGENT[i]) agentPredictScore += 1;
+        if (AGENT[i] === key[i]) agentConsistency += 1;
       }
 
       let winner = "Tie";
       let cls = "";
-      if (userScore > agentScore) { winner = "User Wins"; cls = "win"; }
-      else if (userScore < agentScore) { winner = "Persona Agent Wins"; cls = "lose"; }
+      if (userScore > agentPredictScore) { winner = "User Wins"; cls = "win"; }
+      else if (userScore < agentPredictScore) { winner = "Persona Agent Wins"; cls = "lose"; }
 
       const rows = QUESTIONS.map((q, i) => {
         const u = q.o[userAnswers[i]];
         const a = q.o[AGENT[i]];
         const okU = userAnswers[i] === q.key ? "✓" : "✗";
-        const okA = AGENT[i] === q.key ? "✓" : "✗";
-        return `<div class=\"row\">Q${i + 1}: User ${okU} (${u}) | Agent ${okA} (${a})</div>`;
+        const okA = AGENT[i] === userAnswers[i] ? "✓" : "✗";
+        return `<div class=\"row\">Q${i + 1}: User ${okU} (${u}) | Persona Prediction ${okA} (${a})</div>`;
       }).join("");
 
       resultEl.innerHTML = `
         <div><strong class="${cls}">${winner}</strong></div>
         <div class="scoreboard">
-          <div class="box"><div class="k">User Score</div><div class="v">${userScore}/15</div></div>
-          <div class="box"><div class="k">Persona Agent Score</div><div class="v">${agentScore}/15</div></div>
-          <div class="box"><div class="k">User-Agent Alignment</div><div class="v">${alignment}/15</div></div>
+          <div class="box"><div class="k">User Persona-Consistency</div><div class="v">${userScore}/15</div></div>
+          <div class="box"><div class="k">Persona Prediction Accuracy</div><div class="v">${agentPredictScore}/15</div></div>
+          <div class="box"><div class="k">Persona Rule-Consistency</div><div class="v">${agentConsistency}/15</div></div>
         </div>
         <div class="detail">${rows}</div>
       `;
