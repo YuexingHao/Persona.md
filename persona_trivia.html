@@ -391,6 +391,28 @@
       flex-wrap: wrap;
     }
 
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+    }
+
+    .copy-mini {
+      border: none;
+      background: transparent;
+      color: #000000;
+      font-size: 0.9rem;
+      padding: 2px 4px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .copy-mini:hover {
+      background: #f2f2f2;
+      transform: none;
+    }
+
     .diff-view {
       margin-top: 10px;
       border: none;
@@ -458,15 +480,15 @@
         </div>
         <div id="updateShell" class="update-shell" hidden>
           <div id="updateBox" class="update-box">
-            <h3>Suggested Persona.md Update (from your answers)</h3>
-            <textarea id="updateText" readonly></textarea>
-            <div class="update-actions">
-              <button id="copyUpdateBtn" type="button">Copy Update Text</button>
-              <button id="downloadUpdateBtn" class="secondary" type="button">Download .md</button>
-              <button id="copyUpdatedPersonaBtn" class="secondary" type="button">Copy Auto-Updated Persona.md</button>
-              <button id="downloadUpdatedPersonaBtn" class="secondary" type="button">Download Auto-Updated Persona.md</button>
+            <div class="title-row">
+              <h3>Suggested Persona.md Update (from your answers)</h3>
+              <button id="copyProposalMiniBtn" class="copy-mini" type="button" title="Copy update proposal" aria-label="Copy update proposal">📋</button>
             </div>
-            <h3 style="margin-top:12px;">Auto-Updated Persona.md (new lines highlighted)</h3>
+            <textarea id="updateText" readonly></textarea>
+            <div class="title-row" style="margin-top:12px;">
+              <h3>Auto-Updated Persona.md (new lines highlighted)</h3>
+              <button id="copyUpdatedMiniBtn" class="copy-mini" type="button" title="Copy updated Persona.md" aria-label="Copy updated Persona.md">📋</button>
+            </div>
             <div id="diffView" class="diff-view"></div>
           </div>
         </div>
@@ -503,10 +525,8 @@
     const revealEl = document.getElementById("reveal");
     const updateBoxEl = document.getElementById("updateBox");
     const updateTextEl = document.getElementById("updateText");
-    const copyUpdateBtn = document.getElementById("copyUpdateBtn");
-    const downloadUpdateBtn = document.getElementById("downloadUpdateBtn");
-    const copyUpdatedPersonaBtn = document.getElementById("copyUpdatedPersonaBtn");
-    const downloadUpdatedPersonaBtn = document.getElementById("downloadUpdatedPersonaBtn");
+    const copyProposalMiniBtn = document.getElementById("copyProposalMiniBtn");
+    const copyUpdatedMiniBtn = document.getElementById("copyUpdatedMiniBtn");
     const diffViewEl = document.getElementById("diffView");
     const toggleUpdateBtn = document.getElementById("toggleUpdateBtn");
     const updateShellEl = document.getElementById("updateShell");
@@ -544,6 +564,19 @@
         updateShellEl.setAttribute("hidden", "");
         toggleUpdateBtn.textContent = "Show";
       }
+    }
+
+    function autoDownloadUpdatedPersona() {
+      if (!autoUpdatedPersonaText) return;
+      const blob = new Blob([autoUpdatedPersonaText], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Updated Persona.md";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     }
 
     function renderProgress() {
@@ -824,6 +857,7 @@
       autoUpdatedPersonaText = buildAutoUpdatedPersona(originalPersonaText, proposal, stats.totalAnswered);
       renderDiffView(autoUpdatedPersonaText, originalPersonaText);
       updateBoxEl.style.display = "block";
+      autoDownloadUpdatedPersona();
       statusEl.textContent = `Autosaved: ${stats.totalAnswered}/${QUESTIONS.length} answered.`;
     }
 
@@ -874,6 +908,7 @@
       autoUpdatedPersonaText = buildAutoUpdatedPersona(originalPersonaText, proposal, QUESTIONS.length);
       renderDiffView(autoUpdatedPersonaText, originalPersonaText);
       updateBoxEl.style.display = "block";
+      autoDownloadUpdatedPersona();
       saveState();
     }
 
@@ -907,31 +942,17 @@
       statusEl.textContent = "Quiz reset.";
     });
 
-    copyUpdateBtn.addEventListener("click", async () => {
+    copyProposalMiniBtn.addEventListener("click", async () => {
       if (!updateTextEl.value) return;
       try {
         await navigator.clipboard.writeText(updateTextEl.value);
-        statusEl.textContent = "Persona update text copied to clipboard.";
+        statusEl.textContent = "Copied suggested update.";
       } catch (_) {
         statusEl.textContent = "Clipboard copy blocked by browser; use manual copy.";
       }
     });
 
-    downloadUpdateBtn.addEventListener("click", () => {
-      if (!updateTextEl.value) return;
-      const blob = new Blob([updateTextEl.value], { type: "text/markdown;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Persona_Update_Proposal_${new Date().toISOString().slice(0, 10)}.md`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      statusEl.textContent = "Downloaded Persona update proposal.";
-    });
-
-    copyUpdatedPersonaBtn.addEventListener("click", async () => {
+    copyUpdatedMiniBtn.addEventListener("click", async () => {
       if (!autoUpdatedPersonaText) return;
       try {
         await navigator.clipboard.writeText(autoUpdatedPersonaText);
@@ -939,20 +960,6 @@
       } catch (_) {
         statusEl.textContent = "Clipboard copy blocked by browser; use manual copy.";
       }
-    });
-
-    downloadUpdatedPersonaBtn.addEventListener("click", () => {
-      if (!autoUpdatedPersonaText) return;
-      const blob = new Blob([autoUpdatedPersonaText], { type: "text/markdown;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Persona_Auto_Updated_${new Date().toISOString().slice(0, 10)}.md`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      statusEl.textContent = "Downloaded auto-updated Persona.md.";
     });
 
     toggleUpdateBtn.addEventListener("click", () => {
