@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Friend Mode - Guess Persona</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --ink: #172033;
+      --muted: #5c6b84;
+      --line: #d8dfec;
+      --primary: #2563eb;
+      --primary2: #1d4ed8;
+      --ok: #15803d;
+      --bad: #b91c1c;
+      --warn: #a16207;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top right, #dbeafe 0%, var(--bg) 35%, var(--bg) 100%);
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 22px 16px 42px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+    .card + .card { margin-top: 12px; }
+    h1, h2, h3 { margin: 0; }
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.08rem; margin-bottom: 8px; }
+    p { margin: 8px 0 0; color: var(--muted); line-height: 1.45; }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 130px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.42;
+      resize: vertical;
+      color: var(--ink);
+      background: #fbfdff;
+    }
+    .btns {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    button {
+      border: 1px solid var(--primary2);
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { font-size: 0.88rem; color: var(--muted); }
+    .pill {
+      display: inline-block;
+      font-size: 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      padding: 3px 8px;
+      margin-right: 6px;
+      color: var(--muted);
+      background: #f8fbff;
+    }
+    .qbox {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fcfdff;
+    }
+    .qhead { font-weight: 700; line-height: 1.4; }
+    .opts {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    label.opt {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: #fff;
+      cursor: pointer;
+    }
+    label.opt:hover { border-color: #9bb7f5; }
+    label.opt input { margin-top: 3px; }
+    label.opt.friend {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    label.opt.pred {
+      border-color: #7c3aed;
+      background: #f5f3ff;
+    }
+    label.opt.both {
+      border-color: #15803d;
+      background: #f0fdf4;
+    }
+    .tags { margin-left: auto; display: flex; gap: 6px; }
+    .tag {
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      line-height: 1.1;
+    }
+    .tag-friend { background: #dbeafe; color: #1e3a8a; border-color: #93c5fd; }
+    .tag-pred { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+    .score {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #f8fbff;
+    }
+    .metric .k { color: var(--muted); font-size: 0.76rem; }
+    .metric .v { font-size: 1.05rem; font-weight: 800; }
+    .ending {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #f8fafc;
+      font-size: 0.93rem;
+      line-height: 1.45;
+    }
+    .ending.good { border-color: #86efac; background: #f0fdf4; }
+    .ending.mid { border-color: #fde68a; background: #fffbeb; }
+    .ending.low { border-color: #fecaca; background: #fef2f2; }
+    .hidden { display: none; }
+    .footer-link { margin-top: 10px; font-size: 0.9rem; }
+    .footer-link a { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>Friend Mode: Guess Your Friend's Persona</h1>
+      <p>Share a sanitized persona profile, then run a short duel where this page predicts your friend's choices. No backend; everything stays in-browser.</p>
+      <div style="margin-top:10px;">
+        <span class="pill">step 1: anonymize</span>
+        <span class="pill">step 2: analyze</span>
+        <span class="pill">step 3: friend answers</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>1) Share-Safe Persona Generator</h2>
+      <p>Load your `Persona.md` and remove obvious identifiable information before sharing.</p>
+      <div class="row">
+        <textarea id="rawPersona" placeholder="Paste persona text here, or click 'Load Persona.md'."></textarea>
+        <textarea id="safePersona" placeholder="Sanitized persona appears here."></textarea>
+      </div>
+      <div class="btns">
+        <button id="loadPersonaBtn" type="button">Load Persona.md</button>
+        <button id="sanitizeBtn" type="button">Sanitize Text</button>
+        <button id="copySafeBtn" class="secondary" type="button">Copy Safe Persona</button>
+        <button id="downloadSafeBtn" class="secondary" type="button">Download Safe .md</button>
+        <span id="sanitizeStatus" class="status"></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2) Guess Game Setup</h2>
+      <p>Use sanitized text to build a prediction profile, then let your friend answer each question.</p>
+      <div class="btns">
+        <button id="analyzeBtn" type="button">Analyze Safe Persona</button>
+        <span id="analyzeStatus" class="status"></span>
+      </div>
+      <div id="featureView" class="ending hidden"></div>
+    </section>
+
+    <section class="card">
+      <h2>3) Friend Answer Duel</h2>
+      <div id="quiz" class="qbox hidden"></div>
+      <div class="btns">
+        <button id="prevBtn" class="secondary hidden" type="button">Previous</button>
+        <button id="nextBtn" class="hidden" type="button">Next</button>
+        <button id="resetBtn" class="secondary hidden" type="button">Reset</button>
+        <span id="quizStatus" class="status"></span>
+      </div>
+      <div id="result" class="hidden"></div>
+    </section>
+
+    <p class="footer-link">Back to <a href="./index.html">Persona Index</a></p>
+  </main>
+
+  <script>
+    const QUESTIONS = [
+      {
+        axis: "execution",
+        q: "A practical task arrives with a tight deadline. What would your friend most likely do first?",
+        o: ["Start executing quickly and show concrete progress", "Open a longer strategy discussion before touching implementation"]
+      },
+      {
+        axis: "validation",
+        q: "Before sharing results, what behavior is more characteristic of your friend?",
+        o: ["Run explicit checks and verify critical details", "Rely on first-pass confidence and refine later"]
+      },
+      {
+        axis: "comms",
+        q: "How does your friend usually send updates in collaborative work?",
+        o: ["Compact, high-signal bullets", "Long narrative updates"]
+      },
+      {
+        axis: "risk",
+        q: "When a mismatch appears in data or logic, what is the likely reaction?",
+        o: ["Pause and investigate root cause", "Accept it if the overall output still looks good"]
+      },
+      {
+        axis: "structure",
+        q: "How does your friend usually handle naming and organization?",
+        o: ["Deterministic structure with stable naming", "Flexible ad-hoc naming case by case"]
+      },
+      {
+        axis: "ambiguity",
+        q: "When requirements are ambiguous, what style sounds more like your friend?",
+        o: ["Proceed with safe defaults and state assumptions", "Wait until every detail is fully clarified"]
+      },
+      {
+        axis: "scope",
+        q: "In technical work, what focus sounds more representative?",
+        o: ["Comparative workflows and systematic checks", "Single-path exploration with lighter evaluation"]
+      },
+      {
+        axis: "correction",
+        q: "If an explanation seems wrong, what does your friend usually do?",
+        o: ["Request correction quickly", "Defer correction and move on"]
+      }
+    ];
+
+    const RAW = document.getElementById("rawPersona");
+    const SAFE = document.getElementById("safePersona");
+    const sanitizeStatus = document.getElementById("sanitizeStatus");
+    const analyzeStatus = document.getElementById("analyzeStatus");
+    const quizStatus = document.getElementById("quizStatus");
+    const featureView = document.getElementById("featureView");
+    const quiz = document.getElementById("quiz");
+    const result = document.getElementById("result");
+
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let profile = null;
+    let preds = QUESTIONS.map(() => 0);
+    let answers = Array(QUESTIONS.length).fill(null);
+    let current = 0;
+
+    function sanitizePersonaText(text) {
+      let out = text || "";
+      out = out.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[REDACTED_EMAIL]");
+      out = out.replace(/https?:\/\/\S+/gi, "[REDACTED_URL]");
+      out = out.replace(/\bID\d{3,}\b/g, "[REDACTED_ID]");
+      out = out.replace(/\b\d{4}-\d{2}-\d{2}\b/g, "[REDACTED_DATE]");
+      out = out.replace(/\/home\/[^\s/]+/g, "/home/[REDACTED_USER]");
+      out = out.replace(/github\.com\/[A-Za-z0-9_.-]+/g, "github.com/[REDACTED_USER]");
+      out = out.replace(/\b[A-Z][a-z]+@[A-Za-z.-]+\b/g, "[REDACTED_CONTACT]");
+      return out;
+    }
+
+    function countMatches(text, keywords) {
+      const lower = text.toLowerCase();
+      let score = 0;
+      for (const k of keywords) {
+        if (lower.includes(k)) score += 1;
+      }
+      return score;
+    }
+
+    function analyzePersona(text) {
+      const t = text.toLowerCase();
+      const axes = {
+        execution: countMatches(t, ["execute", "direct", "execution", "do first", "action"]),
+        validation: countMatches(t, ["verify", "validation", "double-check", "exact-match", "integrity"]),
+        comms: countMatches(t, ["concise", "compact", "high signal", "minimal fluff", "bullet"]),
+        risk: countMatches(t, ["root cause", "mismatch", "non-negotiable", "investigate"]),
+        structure: countMatches(t, ["deterministic", "schema", "consistency", "naming", "trace"]),
+        ambiguity: countMatches(t, ["safe default", "assumptions", "ambigu", "proceed"]),
+        scope: countMatches(t, ["comparative", "pipelines", "model", "benchmark"]),
+        correction: countMatches(t, ["correction", "fix", "wrong", "follow-up"]) 
+      };
+
+      const orientation = {};
+      for (const [k, v] of Object.entries(axes)) {
+        orientation[k] = v > 0 ? 0 : 1;
+      }
+      return { axes, orientation };
+    }
+
+    function renderFeatureView() {
+      if (!profile) return;
+      featureView.classList.remove("hidden");
+      featureView.innerHTML = `
+        <strong>Extracted persona signals:</strong><br>
+        execution=${profile.axes.execution}, validation=${profile.axes.validation}, comms=${profile.axes.comms}, risk=${profile.axes.risk}, structure=${profile.axes.structure}, ambiguity=${profile.axes.ambiguity}, scope=${profile.axes.scope}, correction=${profile.axes.correction}
+      `;
+    }
+
+    function renderQuiz() {
+      const q = QUESTIONS[current];
+      quiz.classList.remove("hidden");
+      prevBtn.classList.remove("hidden");
+      nextBtn.classList.remove("hidden");
+      resetBtn.classList.remove("hidden");
+
+      quiz.innerHTML = `
+        <div class="qhead">Q${current + 1}/${QUESTIONS.length}. ${q.q}</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="friendq" value="0"> <span>${q.o[0]}</span></label>
+          <label class="opt"><input type="radio" name="friendq" value="1"> <span>${q.o[1]}</span></label>
+        </div>
+      `;
+
+      const saved = answers[current];
+      if (saved !== null) {
+        const chosen = quiz.querySelector(`input[name="friendq"][value="${saved}"]`);
+        if (chosen) chosen.checked = true;
+      }
+
+      quiz.querySelectorAll('input[name="friendq"]').forEach((el) => {
+        el.addEventListener("change", () => {
+          answers[current] = Number(el.value);
+          applyChoiceVisuals();
+        });
+      });
+
+      prevBtn.disabled = current === 0;
+      nextBtn.textContent = current === QUESTIONS.length - 1 ? "Finish" : "Next";
+      quizStatus.textContent = `Friend Mode: Question ${current + 1}/${QUESTIONS.length}`;
+      result.classList.add("hidden");
+      result.innerHTML = "";
+      applyChoiceVisuals();
+    }
+
+    function applyChoiceVisuals() {
+      const labels = quiz.querySelectorAll("label.opt");
+      labels.forEach((label, idx) => {
+        label.classList.remove("friend", "pred", "both");
+        const old = label.querySelector(".tags");
+        if (old) old.remove();
+
+        const isFriend = answers[current] === idx;
+        const isPred = preds[current] === idx;
+
+        if (isFriend && isPred) label.classList.add("both");
+        else if (isFriend) label.classList.add("friend");
+        else if (isPred) label.classList.add("pred");
+
+        if (isFriend || isPred) {
+          const tags = document.createElement("span");
+          tags.className = "tags";
+          if (isFriend) {
+            const t = document.createElement("span");
+            t.className = "tag tag-friend";
+            t.textContent = "FRIEND";
+            tags.appendChild(t);
+          }
+          if (isPred) {
+            const t = document.createElement("span");
+            t.className = "tag tag-pred";
+            t.textContent = "PRED";
+            tags.appendChild(t);
+          }
+          label.appendChild(tags);
+        }
+      });
+    }
+
+    function summarize() {
+      const answered = answers.filter(v => v !== null).length;
+      const acc = answers.reduce((n, v, i) => (v !== null && v === preds[i] ? n + 1 : n), 0);
+      const pct = answered ? Math.round((acc / answered) * 100) : 0;
+
+      let cls = "mid";
+      let msg = "Decent read. A few differences suggest your friend has nuanced preferences not fully captured yet.";
+      if (pct >= 80) {
+        cls = "good";
+        msg = "Strong guess quality. Your anonymized persona captured your friend's working style well.";
+      } else if (pct < 55) {
+        cls = "low";
+        msg = "Prediction drift is high. Ask your friend to share more preference clues and rerun.";
+      }
+
+      result.classList.remove("hidden");
+      result.innerHTML = `
+        <div class="score">
+          <div class="metric"><div class="k">Answered</div><div class="v">${answered}/${QUESTIONS.length}</div></div>
+          <div class="metric"><div class="k">Prediction Match</div><div class="v">${acc}/${answered || 1}</div></div>
+          <div class="metric"><div class="k">Accuracy</div><div class="v">${pct}%</div></div>
+        </div>
+        <div class="ending ${cls}">${msg}</div>
+      `;
+      quizStatus.textContent = "Friend Mode complete.";
+    }
+
+    document.getElementById("loadPersonaBtn").addEventListener("click", async () => {
+      try {
+        const r = await fetch("./Persona.md", { cache: "no-store" });
+        if (!r.ok) throw new Error("Unable to load Persona.md");
+        RAW.value = await r.text();
+        sanitizeStatus.textContent = "Loaded Persona.md.";
+      } catch (e) {
+        sanitizeStatus.textContent = "Could not load Persona.md. Paste manually.";
+      }
+    });
+
+    document.getElementById("sanitizeBtn").addEventListener("click", () => {
+      SAFE.value = sanitizePersonaText(RAW.value);
+      sanitizeStatus.textContent = SAFE.value.trim() ? "Sanitized." : "No text to sanitize.";
+    });
+
+    document.getElementById("copySafeBtn").addEventListener("click", async () => {
+      if (!SAFE.value.trim()) return;
+      try {
+        await navigator.clipboard.writeText(SAFE.value);
+        sanitizeStatus.textContent = "Copied safe persona text.";
+      } catch (_) {
+        sanitizeStatus.textContent = "Clipboard blocked; copy manually.";
+      }
+    });
+
+    document.getElementById("downloadSafeBtn").addEventListener("click", () => {
+      if (!SAFE.value.trim()) return;
+      const blob = new Blob([SAFE.value], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Persona_Share_Safe_${new Date().toISOString().slice(0, 10)}.md`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      sanitizeStatus.textContent = "Downloaded safe persona.";
+    });
+
+    document.getElementById("analyzeBtn").addEventListener("click", () => {
+      const txt = SAFE.value.trim() || RAW.value.trim();
+      if (!txt) {
+        analyzeStatus.textContent = "Paste or load persona text first.";
+        return;
+      }
+      profile = analyzePersona(txt);
+      preds = QUESTIONS.map(q => profile.orientation[q.axis] ?? 0);
+      answers = Array(QUESTIONS.length).fill(null);
+      current = 0;
+      renderFeatureView();
+      renderQuiz();
+      analyzeStatus.textContent = "Persona analyzed. Hand the device to your friend.";
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (current === 0) return;
+      current -= 1;
+      renderQuiz();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (answers[current] === null) {
+        quizStatus.textContent = `Pick one option for Q${current + 1}.`;
+        return;
+      }
+      if (current === QUESTIONS.length - 1) {
+        summarize();
+        return;
+      }
+      current += 1;
+      renderQuiz();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      answers = Array(QUESTIONS.length).fill(null);
+      current = 0;
+      if (profile) renderQuiz();
+      result.classList.add("hidden");
+      result.innerHTML = "";
+      quizStatus.textContent = "Quiz reset.";
+    });
+  </script>
+</body>
+</html>
