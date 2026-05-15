@@ -363,6 +363,29 @@
       flex-wrap: wrap;
     }
 
+    .diff-view {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #ffffff;
+      max-height: 220px;
+      overflow: auto;
+      font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .diff-add {
+      background: #ecfdf3;
+      border-left: 3px solid #22c55e;
+      padding: 2px 6px;
+      margin: 2px 0;
+      display: block;
+    }
+
     a { color: #1d4ed8; }
 
     @media (min-width: 760px) {
@@ -403,7 +426,11 @@
         <div class="update-actions">
           <button id="copyUpdateBtn" type="button">Copy Update Text</button>
           <button id="downloadUpdateBtn" class="secondary" type="button">Download .md</button>
+          <button id="copyUpdatedPersonaBtn" class="secondary" type="button">Copy Auto-Updated Persona.md</button>
+          <button id="downloadUpdatedPersonaBtn" class="secondary" type="button">Download Auto-Updated Persona.md</button>
         </div>
+        <h3 style="margin-top:12px;">Auto-Updated Persona.md (new lines highlighted)</h3>
+        <div id="diffView" class="diff-view"></div>
       </div>
     </section>
 
@@ -439,12 +466,17 @@
     const updateTextEl = document.getElementById("updateText");
     const copyUpdateBtn = document.getElementById("copyUpdateBtn");
     const downloadUpdateBtn = document.getElementById("downloadUpdateBtn");
+    const copyUpdatedPersonaBtn = document.getElementById("copyUpdatedPersonaBtn");
+    const downloadUpdatedPersonaBtn = document.getElementById("downloadUpdatedPersonaBtn");
+    const diffViewEl = document.getElementById("diffView");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const progressFill = document.getElementById("progressFill");
     const progressText = document.getElementById("progressText");
 
     const STORAGE_KEY = "persona_trivia_state_v1";
+    let originalPersonaText = "";
+    let autoUpdatedPersonaText = "";
     const userAnswers = Array(QUESTIONS.length).fill(null);
     let current = 0;
 
@@ -475,6 +507,16 @@
           current = Math.min(Math.max(parsed.current, 0), QUESTIONS.length - 1);
         }
       } catch (_) {}
+    }
+
+    async function loadOriginalPersonaText() {
+      try {
+        const r = await fetch("./Persona.md", { cache: "no-store" });
+        if (!r.ok) throw new Error("fetch failed");
+        originalPersonaText = await r.text();
+      } catch (_) {
+        originalPersonaText = "";
+      }
     }
 
     function answeredCount() {
@@ -671,14 +713,46 @@
       return lines.join("\n");
     }
 
+    function buildAutoUpdatedPersona(baseText, proposalText, totalAnswered) {
+      const src = (baseText || "").trim();
+      const base = src ? src : "# Persona\n";
+      const header = "\n\n## Auto-Learned From Trivia\n";
+      const stamp = `- ${new Date().toISOString().slice(0, 10)}: ${totalAnswered}/${QUESTIONS.length} questions answered in persona trivia; auto-update snapshot generated.\n`;
+      return `${base}${header}${stamp}\n### Update Proposal Snapshot\n\n${proposalText}\n`;
+    }
+
+    function renderDiffView(updatedText, baseText) {
+      if (!updatedText) {
+        diffViewEl.style.display = "none";
+        diffViewEl.innerHTML = "";
+        return;
+      }
+      const baseLines = new Set((baseText || "").split("\n"));
+      const lines = updatedText.split("\n");
+      const html = lines.map((line) => {
+        const esc = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        if (!baseLines.has(line) && line.trim() !== "") {
+          return `<span class="diff-add">${esc}</span>`;
+        }
+        return esc;
+      }).join("<br>");
+      diffViewEl.innerHTML = html;
+      diffViewEl.style.display = "block";
+    }
+
     function refreshLiveUpdate() {
       const stats = partialStats();
       if (stats.totalAnswered === 0) {
         updateBoxEl.style.display = "none";
         updateTextEl.value = "";
+        autoUpdatedPersonaText = "";
+        renderDiffView("", "");
         return;
       }
-      updateTextEl.value = buildPersonaUpdateText(stats.agentPredictScore, stats.userScore, stats.totalAnswered);
+      const proposal = buildPersonaUpdateText(stats.agentPredictScore, stats.userScore, stats.totalAnswered);
+      updateTextEl.value = proposal;
+      autoUpdatedPersonaText = buildAutoUpdatedPersona(originalPersonaText, proposal, stats.totalAnswered);
+      renderDiffView(autoUpdatedPersonaText, originalPersonaText);
       updateBoxEl.style.display = "block";
       statusEl.textContent = `Autosaved: ${stats.totalAnswered}/${QUESTIONS.length} answered.`;
     }
@@ -725,7 +799,10 @@
       resultEl.style.display = "block";
       statusEl.textContent = "Duel complete.";
 
-      updateTextEl.value = buildPersonaUpdateText(agentPredictScore, userScore, QUESTIONS.length);
+      const proposal = buildPersonaUpdateText(agentPredictScore, userScore, QUESTIONS.length);
+      updateTextEl.value = proposal;
+      autoUpdatedPersonaText = buildAutoUpdatedPersona(originalPersonaText, proposal, QUESTIONS.length);
+      renderDiffView(autoUpdatedPersonaText, originalPersonaText);
       updateBoxEl.style.display = "block";
       saveState();
     }
@@ -783,8 +860,36 @@
       statusEl.textContent = "Downloaded Persona update proposal.";
     });
 
-    loadState();
-    render();
+    copyUpdatedPersonaBtn.addEventListener("click", async () => {
+      if (!autoUpdatedPersonaText) return;
+      try {
+        await navigator.clipboard.writeText(autoUpdatedPersonaText);
+        statusEl.textContent = "Copied auto-updated Persona.md.";
+      } catch (_) {
+        statusEl.textContent = "Clipboard copy blocked by browser; use manual copy.";
+      }
+    });
+
+    downloadUpdatedPersonaBtn.addEventListener("click", () => {
+      if (!autoUpdatedPersonaText) return;
+      const blob = new Blob([autoUpdatedPersonaText], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Persona_Auto_Updated_${new Date().toISOString().slice(0, 10)}.md`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      statusEl.textContent = "Downloaded auto-updated Persona.md.";
+    });
+
+    (async () => {
+      await loadOriginalPersonaText();
+      loadState();
+      render();
+      refreshLiveUpdate();
+    })();
   </script>
 </body>
 </html>
