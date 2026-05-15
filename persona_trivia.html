@@ -164,6 +164,37 @@
       font-size: 0.9rem;
     }
     .detail .row + .row { margin-top: 6px; }
+    .update-box {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fbfcff;
+      display: none;
+    }
+    .update-box h3 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+    }
+    .update-box textarea {
+      width: 100%;
+      min-height: 180px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px;
+      font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      resize: vertical;
+      background: #fff;
+      color: var(--ink);
+    }
+    .update-actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
     a { color: var(--accent); }
     @media (min-width: 760px) {
       .opts { grid-template-columns: 1fr 1fr; }
@@ -192,6 +223,14 @@
         <span id="status" class="status"></span>
       </div>
       <div id="result" class="result"></div>
+      <div id="updateBox" class="update-box">
+        <h3>Suggested Persona.md Update (from your answers)</h3>
+        <textarea id="updateText" readonly></textarea>
+        <div class="update-actions">
+          <button id="copyUpdateBtn" type="button">Copy Update Text</button>
+          <button id="downloadUpdateBtn" class="secondary" type="button">Download .md</button>
+        </div>
+      </div>
     </section>
 
     <p class="sub" style="margin-top:10px;">
@@ -201,21 +240,21 @@
 
   <script>
     const QUESTIONS = [
-      { q: "For a straightforward request, what is preferred?", o: ["Execute directly", "Discuss at length first"], key: 0, persona: 0, why: "Persona notes direct execution over discussion." },
-      { q: "When data integrity is involved, what matters more?", o: ["Explicit double-checking", "Fast approximate output"], key: 0, persona: 0, why: "Persona repeatedly prioritizes explicit validation." },
-      { q: "Preferred status update format?", o: ["Compact bullets with IDs and reasons", "Long narrative paragraph"], key: 0, persona: 0, why: "Status rule says compact list with ID -> state -> reason." },
-      { q: "How should artifact naming be handled?", o: ["Deterministic date/version anchors", "Ad-hoc names"], key: 0, persona: 0, why: "Persona emphasizes deterministic naming and traceability." },
-      { q: "Decision style under pressure?", o: ["Accuracy first, then speed", "Speed first, then accuracy"], key: 0, persona: 0, why: "Working style states accuracy first, then speed." },
-      { q: "If a mismatch appears, what next?", o: ["Investigate root cause", "Ignore if output mostly looks fine"], key: 0, persona: 0, why: "Non-negotiable: investigate mismatch root cause before finalize." },
-      { q: "For derivative datasets, schema approach?", o: ["Preserve schema consistency", "Change columns as convenient"], key: 0, persona: 0, why: "Persona requires schema consistency for derivatives." },
-      { q: "When request is ambiguous, default behavior?", o: ["Safe default + explicit assumptions", "Wait indefinitely for clarification"], key: 0, persona: 0, why: "Personalization rule: safe default and report assumptions." },
-      { q: "Acceptance criterion for data tasks?", o: ["Exact-match checks + explicit confirmation", "Single quick spot-check"], key: 0, persona: 0, why: "Acceptance pattern calls for exact-match confirmation." },
-      { q: "Preferred collaboration tone?", o: ["Minimal fluff, high signal", "Verbose motivational style"], key: 0, persona: 0, why: "Persona collaboration style is concise and high signal." },
-      { q: "Queue monitoring detail level?", o: ["Include reason tags like Priority/Resources", "Only report pending/running"], key: 0, persona: 0, why: "Persona asks to include pending reasons like Priority/Resources." },
-      { q: "What should data-task reports include?", o: ["Join key, row counts, mismatches, affected IDs", "Only final output path"], key: 0, persona: 0, why: "Personalization rule defines those exact report fields." },
-      { q: "Most aligned domain focus?", o: ["Dataset curation and label QC", "Experimental visual theming"], key: 0, persona: 0, why: "Domain priorities center on dataset curation and quality control." },
-      { q: "Model workflow preference?", o: ["Comparative pipelines across model families", "Single model only"], key: 0, persona: 0, why: "Persona focuses on cross-model comparative pipelines." },
-      { q: "If explanation seems wrong, likely follow-up?", o: ["Request correction quickly", "Postpone correction"], key: 0, persona: 0, why: "Interaction pattern shows immediate correction requests." }
+      { q: "You have ten minutes before a meeting, and someone asks for a quick fix that seems straightforward. Which response feels more like your natural style when deciding what to do first?", o: ["Implement right away and show concrete progress", "Pause and discuss every design angle before touching anything"], key: 0, persona: 0, why: "Persona indicates direct execution over extended upfront discussion." },
+      { q: "A result looks good at first glance, but this output will be used in downstream experiments. Under that pressure, what feels more like your default instinct?", o: ["Double-check key fields explicitly before calling it done", "Ship fast and assume small issues can be cleaned up later"], key: 0, persona: 0, why: "Persona strongly favors explicit validation when integrity matters." },
+      { q: "You are sending a status update to collaborators who are juggling many tasks. Which style better matches how you usually communicate updates?", o: ["Compact bullets with IDs, states, and reasons", "A long narrative that explains everything in one block"], key: 0, persona: 0, why: "Persona prefers concise status reports with concrete identifiers." },
+      { q: "You are naming a new artifact that will be revisited in a month. Which naming style sounds most consistent with your normal habits?", o: ["Deterministic names with date/version anchors", "Whatever name feels convenient in the moment"], key: 0, persona: 0, why: "Persona emphasizes deterministic and traceable naming conventions." },
+      { q: "A deadline is close and you need to make a judgment call. Which priority order sounds most like you in practice?", o: ["Protect correctness first, then optimize speed", "Move fastest first, then revisit correctness only if needed"], key: 0, persona: 0, why: "Persona states an accuracy-first decision style." },
+      { q: "During a merge step, you discover a mismatch that could affect conclusions. What is more representative of your default behavior?", o: ["Investigate root cause before finalizing", "Accept the mismatch if most rows still look plausible"], key: 0, persona: 0, why: "Persona lists root-cause investigation as non-negotiable." },
+      { q: "You are creating a derivative dataset from a trusted reference file. Which choice is most aligned with your normal quality bar?", o: ["Preserve schema consistency unless there is a clear reason to change", "Adjust schema freely as long as the file still loads"], key: 0, persona: 0, why: "Persona explicitly prioritizes schema consistency in derivatives." },
+      { q: "A request is slightly ambiguous and you do not want to stall momentum. Which action best matches your collaboration style?", o: ["Proceed with a safe default and clearly state assumptions", "Wait without action until every detail is clarified"], key: 0, persona: 0, why: "Persona rule says proceed safely and make assumptions explicit." },
+      { q: "Someone asks whether a data task is truly complete. What evidence format sounds most like what you would provide?", o: ["Exact-match checks plus explicit confirmation", "A quick spot-check and a confidence statement"], key: 0, persona: 0, why: "Persona acceptance pattern requires exact-match confirmation." },
+      { q: "In collaborative work, what communication tone feels closest to your actual preference over time?", o: ["High-signal, minimal-fluff task communication", "Long motivational style with broad framing"], key: 0, persona: 0, why: "Persona describes a concise, task-focused communication style." },
+      { q: "You are monitoring queued jobs and someone asks for an update. Which answer shape feels most like your normal reporting behavior?", o: ["Include pending reasons such as Priority or Resources", "Only report whether jobs are pending or running"], key: 0, persona: 0, why: "Persona asks for reason-level visibility in queue status." },
+      { q: "A teammate asks for a final report on a data transformation. Which level of detail best fits your default standards?", o: ["Include join keys, row counts, mismatch totals, and affected IDs", "Share only output location and high-level summary"], key: 0, persona: 0, why: "Persona defines these concrete metrics as required report content." },
+      { q: "If you had to pick one area that best describes your practical focus in this workspace, which one feels most accurate?", o: ["Dataset curation and label quality control", "Visual polish experiments and interface aesthetics"], key: 0, persona: 0, why: "Persona domain priorities emphasize dataset and label quality work." },
+      { q: "When evaluating model outputs, which workflow feels closest to your long-term pattern?", o: ["Compare behavior across multiple model families", "Stick to a single model and rarely benchmark alternatives"], key: 0, persona: 0, why: "Persona highlights comparative model pipelines as a recurring priority." },
+      { q: "An assistant explanation sounds slightly off and could mislead next steps. What is most consistent with your observed follow-up pattern?", o: ["Request correction quickly and tighten the answer", "Postpone correction and move on to another task"], key: 0, persona: 0, why: "Persona interaction history shows immediate correction requests." }
     ];
 
     // Persona-agent predicts the user's likely answer from Persona.md signals.
@@ -225,6 +264,10 @@
     const statusEl = document.getElementById("status");
     const resultEl = document.getElementById("result");
     const revealEl = document.getElementById("reveal");
+    const updateBoxEl = document.getElementById("updateBox");
+    const updateTextEl = document.getElementById("updateText");
+    const copyUpdateBtn = document.getElementById("copyUpdateBtn");
+    const downloadUpdateBtn = document.getElementById("downloadUpdateBtn");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const userAnswers = Array(QUESTIONS.length).fill(null);
@@ -265,6 +308,8 @@
       resultEl.innerHTML = "";
       revealEl.style.display = "none";
       revealEl.innerHTML = "";
+      updateBoxEl.style.display = "none";
+      updateTextEl.value = "";
     }
 
     function showReveal() {
@@ -282,6 +327,63 @@
 
     function allAnswered() {
       return userAnswers.every(v => v !== null);
+    }
+
+    function buildPersonaUpdateText(agentPredictScore, userScore) {
+      const total = QUESTIONS.length;
+      const mismatches = [];
+      const matches = [];
+      for (let i = 0; i < total; i += 1) {
+        const row = {
+          idx: i + 1,
+          q: QUESTIONS[i].q,
+          user: QUESTIONS[i].o[userAnswers[i]],
+          persona: QUESTIONS[i].o[AGENT[i]],
+          why: QUESTIONS[i].why
+        };
+        if (userAnswers[i] === AGENT[i]) matches.push(row);
+        else mismatches.push(row);
+      }
+
+      const lines = [];
+      lines.push("# Persona Update Proposal (Generated from Trivia Answers)");
+      lines.push("");
+      lines.push(`Date: ${new Date().toISOString().slice(0, 10)}`);
+      lines.push(`Prediction accuracy: ${agentPredictScore}/${total}`);
+      lines.push(`User persona-consistency score: ${userScore}/${total}`);
+      lines.push("");
+      lines.push("## Suggested Changes");
+      if (mismatches.length === 0) {
+        lines.push("- No preference conflicts detected in this run.");
+        lines.push("- Keep current Persona.md stable; add this session as confirming evidence.");
+      } else {
+        lines.push("- Add or refine preference statements based on mismatch scenarios below.");
+      }
+      lines.push("");
+      lines.push("## Mismatch Signals (High Priority for Review)");
+      if (mismatches.length === 0) {
+        lines.push("- None.");
+      } else {
+        mismatches.forEach(m => {
+          lines.push(`- Q${m.idx}: ${m.q}`);
+          lines.push(`  - Persona predicted: ${m.persona}`);
+          lines.push(`  - User selected: ${m.user}`);
+          lines.push(`  - Existing rationale: ${m.why}`);
+        });
+      }
+      lines.push("");
+      lines.push("## Alignment Signals (Can reinforce existing Persona.md)");
+      if (matches.length === 0) {
+        lines.push("- None.");
+      } else {
+        matches.slice(0, 8).forEach(m => {
+          lines.push(`- Q${m.idx}: matched on \"${m.user}\"`);
+        });
+      }
+      lines.push("");
+      lines.push("## Suggested Changelog Entry");
+      lines.push(`- ${new Date().toISOString().slice(0, 10)}: Updated preferences using persona trivia response profile (${agentPredictScore}/${total} prediction match).`);
+      return lines.join("\\n");
     }
 
     function duel() {
@@ -325,6 +427,9 @@
       `;
       resultEl.style.display = "block";
       statusEl.textContent = "Duel complete.";
+
+      updateTextEl.value = buildPersonaUpdateText(agentPredictScore, userScore);
+      updateBoxEl.style.display = "block";
     }
 
     nextBtn.addEventListener("click", () => {
@@ -350,6 +455,29 @@
       current = 0;
       for (let i = 0; i < userAnswers.length; i += 1) userAnswers[i] = null;
       render();
+    });
+
+    copyUpdateBtn.addEventListener("click", async () => {
+      if (!updateTextEl.value) return;
+      try {
+        await navigator.clipboard.writeText(updateTextEl.value);
+        statusEl.textContent = "Persona update text copied to clipboard.";
+      } catch (_) {
+        statusEl.textContent = "Clipboard copy blocked by browser; use manual copy.";
+      }
+    });
+
+    downloadUpdateBtn.addEventListener("click", () => {
+      if (!updateTextEl.value) return;
+      const blob = new Blob([updateTextEl.value], { type: "text/markdown;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `Persona_Update_Proposal_${new Date().toISOString().slice(0, 10)}.md`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      statusEl.textContent = "Downloaded Persona update proposal.";
     });
 
     render();
