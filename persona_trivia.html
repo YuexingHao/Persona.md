@@ -394,6 +394,7 @@
     const progressFill = document.getElementById("progressFill");
     const progressText = document.getElementById("progressText");
 
+    const STORAGE_KEY = "persona_trivia_state_v1";
     const userAnswers = Array(QUESTIONS.length).fill(null);
     let current = 0;
 
@@ -401,6 +402,49 @@
       const ratio = ((current + 1) / QUESTIONS.length) * 100;
       progressFill.style.width = `${ratio}%`;
       progressText.textContent = `Q${current + 1} / ${QUESTIONS.length}`;
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ current, userAnswers }));
+      } catch (_) {}
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed.userAnswers)) {
+          for (let i = 0; i < QUESTIONS.length; i += 1) {
+            const v = parsed.userAnswers[i];
+            userAnswers[i] = (v === 0 || v === 1) ? v : null;
+          }
+        }
+        if (Number.isInteger(parsed.current)) {
+          current = Math.min(Math.max(parsed.current, 0), QUESTIONS.length - 1);
+        }
+      } catch (_) {}
+    }
+
+    function answeredCount() {
+      return userAnswers.filter(v => v !== null).length;
+    }
+
+    function partialStats() {
+      const key = QUESTIONS.map(q => q.key);
+      let userScore = 0;
+      let agentPredictScore = 0;
+      let agentConsistency = 0;
+      let totalAnswered = 0;
+      for (let i = 0; i < QUESTIONS.length; i += 1) {
+        if (userAnswers[i] === null) continue;
+        totalAnswered += 1;
+        if (userAnswers[i] === key[i]) userScore += 1;
+        if (userAnswers[i] === AGENT[i]) agentPredictScore += 1;
+        if (AGENT[i] === key[i]) agentConsistency += 1;
+      }
+      return { totalAnswered, userScore, agentPredictScore, agentConsistency };
     }
 
     function render() {
@@ -428,6 +472,8 @@
           userAnswers[current] = Number(el.value);
           statusEl.textContent = `Locked answer for Question ${current + 1}.`;
           showReveal();
+          refreshLiveUpdate();
+          saveState();
         });
       });
 
@@ -438,8 +484,7 @@
       resultEl.innerHTML = "";
       revealEl.style.display = "none";
       revealEl.innerHTML = "";
-      updateBoxEl.style.display = "none";
-      updateTextEl.value = "";
+      refreshLiveUpdate();
       renderProgress();
     }
 
@@ -489,11 +534,12 @@
       };
     }
 
-    function buildPersonaUpdateText(agentPredictScore, userScore) {
+    function buildPersonaUpdateText(agentPredictScore, userScore, totalAnswered) {
       const total = QUESTIONS.length;
       const mismatches = [];
       const matches = [];
-      for (let i = 0; i < total; i += 1) {
+      for (let i = 0; i < QUESTIONS.length; i += 1) {
+        if (userAnswers[i] === null) continue;
         const row = {
           idx: i + 1,
           q: QUESTIONS[i].q,
@@ -509,8 +555,9 @@
       lines.push("# Persona Update Proposal (Generated from Trivia Answers)");
       lines.push("");
       lines.push(`Date: ${new Date().toISOString().slice(0, 10)}`);
-      lines.push(`Prediction accuracy: ${agentPredictScore}/${total}`);
-      lines.push(`User persona-consistency score: ${userScore}/${total}`);
+      lines.push(`Answered questions: ${totalAnswered}/${total}`);
+      lines.push(`Prediction accuracy: ${agentPredictScore}/${totalAnswered || 1}`);
+      lines.push(`User persona-consistency score: ${userScore}/${totalAnswered || 1}`);
       lines.push("");
       lines.push("## Suggested Changes");
       if (mismatches.length === 0) {
@@ -542,8 +589,20 @@
       }
       lines.push("");
       lines.push("## Suggested Changelog Entry");
-      lines.push(`- ${new Date().toISOString().slice(0, 10)}: Updated preferences using persona trivia response profile (${agentPredictScore}/${total} prediction match).`);
+      lines.push(`- ${new Date().toISOString().slice(0, 10)}: Updated preferences using persona trivia response profile (${agentPredictScore}/${totalAnswered || 1} prediction match over answered questions).`);
       return lines.join("\n");
+    }
+
+    function refreshLiveUpdate() {
+      const stats = partialStats();
+      if (stats.totalAnswered === 0) {
+        updateBoxEl.style.display = "none";
+        updateTextEl.value = "";
+        return;
+      }
+      updateTextEl.value = buildPersonaUpdateText(stats.agentPredictScore, stats.userScore, stats.totalAnswered);
+      updateBoxEl.style.display = "block";
+      statusEl.textContent = `Autosaved: ${stats.totalAnswered}/${QUESTIONS.length} answered.`;
     }
 
     function duel() {
@@ -588,8 +647,9 @@
       resultEl.style.display = "block";
       statusEl.textContent = "Duel complete.";
 
-      updateTextEl.value = buildPersonaUpdateText(agentPredictScore, userScore);
+      updateTextEl.value = buildPersonaUpdateText(agentPredictScore, userScore, QUESTIONS.length);
       updateBoxEl.style.display = "block";
+      saveState();
     }
 
     nextBtn.addEventListener("click", () => {
@@ -602,18 +662,21 @@
         return;
       }
       current += 1;
+      saveState();
       render();
     });
 
     prevBtn.addEventListener("click", () => {
       if (current === 0) return;
       current -= 1;
+      saveState();
       render();
     });
 
     document.getElementById("resetBtn").addEventListener("click", () => {
       current = 0;
       for (let i = 0; i < userAnswers.length; i += 1) userAnswers[i] = null;
+      try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
       render();
       statusEl.textContent = "Quiz reset.";
     });
@@ -642,6 +705,7 @@
       statusEl.textContent = "Downloaded Persona update proposal.";
     });
 
+    loadState();
     render();
   </script>
 </body>
