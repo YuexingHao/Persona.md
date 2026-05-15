@@ -6,15 +6,15 @@
   <title>Compete With Your Persona</title>
   <style>
     :root {
-      --bg0: #0f172a;
-      --bg1: #111827;
-      --bg2: #172554;
-      --card: rgba(255, 255, 255, 0.92);
-      --ink: #0f172a;
-      --muted: #475569;
-      --line: #cbd5e1;
-      --primary: #2563eb;
-      --primary-2: #1d4ed8;
+      --bg0: #f8fbff;
+      --bg1: #f3f7ff;
+      --bg2: #eaf2ff;
+      --card: #ffffff;
+      --ink: #111827;
+      --muted: #4b5563;
+      --line: #d1d5db;
+      --primary: #1d4ed8;
+      --primary-2: #1e40af;
       --good: #15803d;
       --warn: #b45309;
       --bad: #b91c1c;
@@ -25,11 +25,11 @@
 
     body {
       margin: 0;
-      color: #e2e8f0;
+      color: var(--ink);
       font-family: "Space Grotesk", "Avenir Next", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(900px 500px at 8% -5%, #1d4ed8 0%, transparent 60%),
-                  radial-gradient(900px 500px at 92% -5%, #7c3aed 0%, transparent 60%),
-                  linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 45%, var(--bg0) 100%);
+      background: radial-gradient(900px 520px at 8% -5%, #c7ddff 0%, transparent 60%),
+                  radial-gradient(900px 520px at 92% -5%, #e3d3ff 0%, transparent 60%),
+                  linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 42%, var(--bg0) 100%);
       min-height: 100vh;
     }
 
@@ -37,8 +37,8 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background: radial-gradient(600px 300px at 25% 20%, rgba(37, 99, 235, 0.18), transparent 65%),
-                  radial-gradient(600px 300px at 75% 15%, rgba(124, 58, 237, 0.18), transparent 65%);
+      background: radial-gradient(600px 300px at 25% 20%, rgba(37, 99, 235, 0.08), transparent 65%),
+                  radial-gradient(600px 300px at 75% 15%, rgba(124, 58, 237, 0.08), transparent 65%);
       animation: drift 10s ease-in-out infinite alternate;
     }
 
@@ -56,27 +56,27 @@
     }
 
     .hero, .panel {
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid rgba(148, 163, 184, 0.55);
       border-radius: 16px;
-      background: rgba(15, 23, 42, 0.56);
+      background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(8px);
-      box-shadow: 0 12px 30px rgba(2, 6, 23, 0.32);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
     }
 
-    .hero { padding: 18px; }
+    .hero { padding: 22px; }
 
     h1 {
       margin: 0;
       font-size: 1.65rem;
       letter-spacing: -0.01em;
-      color: #f8fafc;
+      color: #0f172a;
     }
 
     .sub {
-      margin-top: 8px;
-      color: #cbd5e1;
+      margin-top: 10px;
+      color: var(--muted);
       font-size: 0.96rem;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .meta {
@@ -87,12 +87,12 @@
     }
 
     .pill {
-      border: 1px solid rgba(148, 163, 184, 0.45);
+      border: 1px solid rgba(148, 163, 184, 0.65);
       border-radius: 999px;
       padding: 4px 10px;
       font-size: 0.8rem;
-      color: #e2e8f0;
-      background: rgba(15, 23, 42, 0.55);
+      color: #334155;
+      background: #f8fbff;
     }
 
     .progress-wrap {
@@ -103,14 +103,14 @@
       display: flex;
       justify-content: space-between;
       font-size: 0.8rem;
-      color: #cbd5e1;
+      color: #475569;
       margin-bottom: 6px;
     }
 
     .progress {
       height: 10px;
       border-radius: 999px;
-      background: rgba(148, 163, 184, 0.28);
+      background: rgba(148, 163, 184, 0.35);
       overflow: hidden;
     }
 
@@ -123,7 +123,7 @@
 
     .panel {
       margin-top: 14px;
-      padding: 16px;
+      padding: 20px;
     }
 
     .q {
@@ -131,7 +131,7 @@
       border-radius: 14px;
       background: var(--card);
       color: var(--ink);
-      padding: 14px;
+      padding: 18px;
       animation: popIn 220ms ease;
     }
 
@@ -143,14 +143,14 @@
     .qhead {
       font-weight: 700;
       font-size: 1rem;
-      line-height: 1.45;
-      margin-bottom: 10px;
+      line-height: 1.55;
+      margin-bottom: 14px;
     }
 
     .opts {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 10px;
+      gap: 14px;
     }
 
     label.opt {
@@ -159,7 +159,7 @@
       align-items: flex-start;
       border: 1px solid var(--line);
       border-radius: 11px;
-      padding: 10px 12px;
+      padding: 13px 14px;
       background: #fff;
       cursor: pointer;
       transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
@@ -174,10 +174,10 @@
     label.opt input { margin-top: 3px; }
 
     .controls {
-      margin-top: 13px;
+      margin-top: 18px;
       display: flex;
       flex-wrap: wrap;
-      gap: 9px;
+      gap: 11px;
       align-items: center;
     }
 
@@ -203,7 +203,7 @@
     }
 
     .status {
-      color: #e2e8f0;
+      color: #475569;
       font-size: 0.9rem;
       margin-left: 2px;
     }
@@ -270,10 +270,10 @@
     }
 
     .result {
-      margin-top: 12px;
+      margin-top: 16px;
       border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 12px;
+      padding: 14px;
       background: #fff;
       color: #0f172a;
       display: none;
@@ -304,14 +304,14 @@
 
     .scoreboard {
       display: grid;
-      gap: 8px;
+      gap: 12px;
       grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     }
 
     .box {
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 10px 12px;
       background: #f8fafc;
     }
 
@@ -319,26 +319,26 @@
     .box .v { font-weight: 800; font-size: 1.07rem; }
 
     .detail {
-      margin-top: 10px;
+      margin-top: 14px;
       max-height: 260px;
       overflow: auto;
       border: 1px solid var(--line);
       border-radius: 9px;
-      padding: 8px;
+      padding: 12px;
       background: #f8fafc;
       font-size: 0.88rem;
     }
 
-    .detail .row + .row { margin-top: 6px; }
+    .detail .row + .row { margin-top: 12px; }
 
     .update-box {
-      margin-top: 12px;
-      border: 1px solid rgba(148, 163, 184, 0.45);
+      margin-top: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.65);
       border-radius: 12px;
-      padding: 12px;
-      background: rgba(15, 23, 42, 0.5);
+      padding: 14px;
+      background: #f9fbff;
       display: none;
-      color: #e2e8f0;
+      color: #0f172a;
     }
 
     .update-box h3 { margin: 0 0 8px; font-size: 0.98rem; }
@@ -346,14 +346,14 @@
     .update-box textarea {
       width: 100%;
       min-height: 180px;
-      border: 1px solid rgba(148, 163, 184, 0.45);
+      border: 1px solid rgba(148, 163, 184, 0.65);
       border-radius: 8px;
-      padding: 9px;
+      padding: 11px;
       resize: vertical;
       font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
-      font-size: 0.82rem;
-      background: #0b1222;
-      color: #e2e8f0;
+      font-size: 0.84rem;
+      background: #ffffff;
+      color: #0f172a;
     }
 
     .update-actions {
@@ -363,7 +363,7 @@
       flex-wrap: wrap;
     }
 
-    a { color: #93c5fd; }
+    a { color: #1d4ed8; }
 
     @media (min-width: 760px) {
       .opts { grid-template-columns: 1fr 1fr; }
