@@ -42,14 +42,28 @@
 
     .wrap {
       position: relative;
-      max-width: 980px;
+      max-width: 1160px;
       margin: 0 auto;
       padding: 22px 16px 52px;
       z-index: 1;
     }
 
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-top: 14px;
+    }
+
+    @media (min-width: 980px) {
+      .content-grid {
+        grid-template-columns: minmax(0, 2.1fr) minmax(280px, 0.9fr);
+        align-items: start;
+      }
+    }
+
     .hero, .panel {
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 16px;
       background: #ffffff;
       box-shadow: none;
@@ -79,12 +93,12 @@
     }
 
     .pill {
-      border: 1px solid rgba(148, 163, 184, 0.65);
+      border: none;
       border-radius: 999px;
       padding: 4px 10px;
       font-size: 0.8rem;
       color: #000000;
-      background: #ffffff;
+      background: #f5f5f5;
     }
 
     .progress-wrap {
@@ -119,7 +133,7 @@
     }
 
     .q {
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 14px;
       background: var(--card);
       color: var(--ink);
@@ -149,18 +163,18 @@
       display: flex;
       gap: 10px;
       align-items: flex-start;
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 11px;
       padding: 13px 14px;
-      background: #fff;
+      background: #f7f7f7;
       cursor: pointer;
       transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     }
 
     label.opt:hover {
       transform: translateY(-1px);
-      border-color: #a3a3a3;
       box-shadow: none;
+      background: #f0f0f0;
     }
 
     label.opt input { margin-top: 3px; }
@@ -203,20 +217,17 @@
     .reveal { display: none; }
 
     label.opt.you {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.20);
+      outline: 2px solid #2563eb;
       background: #eff6ff;
     }
 
     label.opt.persona {
-      border-color: #7c3aed;
-      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.20);
+      outline: 2px solid #7c3aed;
       background: #f5f3ff;
     }
 
     label.opt.both {
-      border-color: #15803d;
-      box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.24);
+      outline: 2px solid #15803d;
       background: #f0fdf4;
     }
 
@@ -263,16 +274,16 @@
 
     .result {
       margin-top: 16px;
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 12px;
       padding: 14px;
-      background: #fff;
+      background: #f8f8f8;
       color: #000000;
       display: none;
     }
 
     .ending {
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 12px;
       padding: 11px;
       margin-bottom: 10px;
@@ -301,7 +312,7 @@
     }
 
     .box {
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 10px;
       padding: 10px 12px;
       background: #f8fafc;
@@ -314,7 +325,7 @@
       margin-top: 14px;
       max-height: 260px;
       overflow: auto;
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 9px;
       padding: 12px;
       background: #f8fafc;
@@ -323,9 +334,34 @@
 
     .detail .row + .row { margin-top: 12px; }
 
+    .side-panel {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 14px 12px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .side-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .side-head strong {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .update-shell[hidden] {
+      display: none;
+    }
+
     .update-box {
-      margin-top: 16px;
-      border: 1px solid var(--line);
+      margin-top: 8px;
+      border: none;
       border-radius: 12px;
       padding: 14px;
       background: #ffffff;
@@ -338,13 +374,13 @@
     .update-box textarea {
       width: 100%;
       min-height: 180px;
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 8px;
       padding: 11px;
       resize: vertical;
       font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
       font-size: 0.84rem;
-      background: #ffffff;
+      background: #f6f6f6;
       color: #000000;
     }
 
@@ -357,10 +393,10 @@
 
     .diff-view {
       margin-top: 10px;
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 8px;
       padding: 10px;
-      background: #ffffff;
+      background: #f6f6f6;
       max-height: 220px;
       overflow: auto;
       font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
@@ -402,29 +438,40 @@
       </div>
     </section>
 
-    <section class="panel">
-      <form id="quiz"></form>
-      <div id="reveal" class="reveal"></div>
-      <div class="controls">
-        <button id="prevBtn" class="secondary" type="button">Previous</button>
-        <button id="nextBtn" type="button">Next Question</button>
-        <button id="resetBtn" class="secondary" type="button">Reset</button>
-        <span id="status" class="status"></span>
-      </div>
-      <div id="result" class="result"></div>
-      <div id="updateBox" class="update-box">
-        <h3>Suggested Persona.md Update (from your answers)</h3>
-        <textarea id="updateText" readonly></textarea>
-        <div class="update-actions">
-          <button id="copyUpdateBtn" type="button">Copy Update Text</button>
-          <button id="downloadUpdateBtn" class="secondary" type="button">Download .md</button>
-          <button id="copyUpdatedPersonaBtn" class="secondary" type="button">Copy Auto-Updated Persona.md</button>
-          <button id="downloadUpdatedPersonaBtn" class="secondary" type="button">Download Auto-Updated Persona.md</button>
+    <div class="content-grid">
+      <section class="panel">
+        <form id="quiz"></form>
+        <div id="reveal" class="reveal"></div>
+        <div class="controls">
+          <button id="prevBtn" class="secondary" type="button">Previous</button>
+          <button id="nextBtn" type="button">Next Question</button>
+          <button id="resetBtn" class="secondary" type="button">Reset</button>
+          <span id="status" class="status"></span>
         </div>
-        <h3 style="margin-top:12px;">Auto-Updated Persona.md (new lines highlighted)</h3>
-        <div id="diffView" class="diff-view"></div>
-      </div>
-    </section>
+        <div id="result" class="result"></div>
+      </section>
+
+      <aside class="side-panel">
+        <div class="side-head">
+          <strong>Persona.md Updates</strong>
+          <button id="toggleUpdateBtn" class="secondary" type="button">Show</button>
+        </div>
+        <div id="updateShell" class="update-shell" hidden>
+          <div id="updateBox" class="update-box">
+            <h3>Suggested Persona.md Update (from your answers)</h3>
+            <textarea id="updateText" readonly></textarea>
+            <div class="update-actions">
+              <button id="copyUpdateBtn" type="button">Copy Update Text</button>
+              <button id="downloadUpdateBtn" class="secondary" type="button">Download .md</button>
+              <button id="copyUpdatedPersonaBtn" class="secondary" type="button">Copy Auto-Updated Persona.md</button>
+              <button id="downloadUpdatedPersonaBtn" class="secondary" type="button">Download Auto-Updated Persona.md</button>
+            </div>
+            <h3 style="margin-top:12px;">Auto-Updated Persona.md (new lines highlighted)</h3>
+            <div id="diffView" class="diff-view"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
 
     <p class="sub" style="margin-top:10px;">Back to <a href="./index.html">Persona Index</a></p>
   </main>
@@ -461,6 +508,8 @@
     const copyUpdatedPersonaBtn = document.getElementById("copyUpdatedPersonaBtn");
     const downloadUpdatedPersonaBtn = document.getElementById("downloadUpdatedPersonaBtn");
     const diffViewEl = document.getElementById("diffView");
+    const toggleUpdateBtn = document.getElementById("toggleUpdateBtn");
+    const updateShellEl = document.getElementById("updateShell");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const progressFill = document.getElementById("progressFill");
@@ -469,8 +518,20 @@
     const STORAGE_KEY = "persona_trivia_state_v1";
     let originalPersonaText = "";
     let autoUpdatedPersonaText = "";
+    let updatePanelOpen = false;
     const userAnswers = Array(QUESTIONS.length).fill(null);
     let current = 0;
+
+    function setUpdatePanel(open) {
+      updatePanelOpen = !!open;
+      if (updatePanelOpen) {
+        updateShellEl.removeAttribute("hidden");
+        toggleUpdateBtn.textContent = "Hide";
+      } else {
+        updateShellEl.setAttribute("hidden", "");
+        toggleUpdateBtn.textContent = "Show";
+      }
+    }
 
     function renderProgress() {
       const ratio = ((current + 1) / QUESTIONS.length) * 100;
@@ -739,6 +800,7 @@
         updateTextEl.value = "";
         autoUpdatedPersonaText = "";
         renderDiffView("", "");
+        setUpdatePanel(false);
         return;
       }
       const proposal = buildPersonaUpdateText(stats.agentPredictScore, stats.userScore, stats.totalAnswered);
@@ -746,6 +808,9 @@
       autoUpdatedPersonaText = buildAutoUpdatedPersona(originalPersonaText, proposal, stats.totalAnswered);
       renderDiffView(autoUpdatedPersonaText, originalPersonaText);
       updateBoxEl.style.display = "block";
+      if (!updatePanelOpen) {
+        setUpdatePanel(true);
+      }
       statusEl.textContent = `Autosaved: ${stats.totalAnswered}/${QUESTIONS.length} answered.`;
     }
 
@@ -796,6 +861,9 @@
       autoUpdatedPersonaText = buildAutoUpdatedPersona(originalPersonaText, proposal, QUESTIONS.length);
       renderDiffView(autoUpdatedPersonaText, originalPersonaText);
       updateBoxEl.style.display = "block";
+      if (!updatePanelOpen) {
+        setUpdatePanel(true);
+      }
       saveState();
     }
 
@@ -876,9 +944,14 @@
       statusEl.textContent = "Downloaded auto-updated Persona.md.";
     });
 
+    toggleUpdateBtn.addEventListener("click", () => {
+      setUpdatePanel(!updatePanelOpen);
+    });
+
     (async () => {
       await loadOriginalPersonaText();
       loadState();
+      setUpdatePanel(false);
       render();
       refreshLiveUpdate();
     })();
