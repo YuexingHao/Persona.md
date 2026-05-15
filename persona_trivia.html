@@ -208,15 +208,65 @@
       margin-left: 2px;
     }
 
-    .reveal {
-      margin-top: 11px;
-      border: 1px solid rgba(59, 130, 246, 0.45);
-      border-radius: 12px;
-      padding: 11px;
-      background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
-      color: #0f172a;
-      display: none;
-      line-height: 1.45;
+    .reveal { display: none; }
+
+    label.opt.you {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.20);
+      background: #eff6ff;
+    }
+
+    label.opt.persona {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.20);
+      background: #f5f3ff;
+    }
+
+    label.opt.both {
+      border-color: #15803d;
+      box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.24);
+      background: #f0fdf4;
+    }
+
+    label.opt .tags {
+      margin-left: auto;
+      display: inline-flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    label.opt .tag {
+      font-size: 0.7rem;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 2px 7px;
+      border: 1px solid transparent;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+    }
+
+    .tag-you {
+      background: #dbeafe;
+      color: #1e3a8a;
+      border-color: #93c5fd;
+    }
+
+    .tag-persona {
+      background: #ede9fe;
+      color: #5b21b6;
+      border-color: #c4b5fd;
+    }
+
+    .q.mismatch {
+      animation: shake 240ms ease;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      50% { transform: translateX(2px); }
+      75% { transform: translateX(-1px); }
+      100% { transform: translateX(0); }
     }
 
     .result {
@@ -465,13 +515,14 @@
       if (saved !== null) {
         const chosen = quiz.querySelector(`input[name="current-q"][value="${saved}"]`);
         if (chosen) chosen.checked = true;
+        applyChoiceVisuals();
       }
 
       quiz.querySelectorAll('input[name="current-q"]').forEach(el => {
         el.addEventListener("change", () => {
           userAnswers[current] = Number(el.value);
           statusEl.textContent = `Locked answer for Question ${current + 1}.`;
-          showReveal();
+          applyChoiceVisuals();
           refreshLiveUpdate();
           saveState();
         });
@@ -488,17 +539,44 @@
       renderProgress();
     }
 
-    function showReveal() {
-      if (userAnswers[current] === null) return;
-      const item = QUESTIONS[current];
-      const pred = AGENT[current];
-      const match = userAnswers[current] === pred;
-      revealEl.innerHTML = `
-        <strong>Persona.md predicts:</strong> ${item.o[pred]}<br>
-        <strong>Rationale:</strong> ${item.why}<br>
-        <strong>Prediction match:</strong> ${match ? "Yes, your choice matches persona prediction." : "No, you surprised your persona this round."}
-      `;
-      revealEl.style.display = "block";
+    function applyChoiceVisuals() {
+      const questionEl = quiz.querySelector(".q");
+      if (!questionEl) return;
+      const labels = quiz.querySelectorAll("label.opt");
+      labels.forEach((label, idx) => {
+        label.classList.remove("you", "persona", "both");
+        const oldTags = label.querySelector(".tags");
+        if (oldTags) oldTags.remove();
+
+        const isYou = userAnswers[current] === idx;
+        const isPersona = AGENT[current] === idx;
+        if (isYou && isPersona) label.classList.add("both");
+        else if (isYou) label.classList.add("you");
+        else if (isPersona) label.classList.add("persona");
+
+        if (isYou || isPersona) {
+          const tags = document.createElement("span");
+          tags.className = "tags";
+          if (isYou) {
+            const t1 = document.createElement("span");
+            t1.className = "tag tag-you";
+            t1.textContent = "YOU";
+            tags.appendChild(t1);
+          }
+          if (isPersona) {
+            const t2 = document.createElement("span");
+            t2.className = "tag tag-persona";
+            t2.textContent = "PERSONA";
+            tags.appendChild(t2);
+          }
+          label.appendChild(tags);
+        }
+      });
+
+      questionEl.classList.remove("mismatch");
+      if (userAnswers[current] !== null && userAnswers[current] !== AGENT[current]) {
+        questionEl.classList.add("mismatch");
+      }
     }
 
     function allAnswered() {
