@@ -6,15 +6,15 @@
   <title>Compete With Your Persona</title>
   <style>
     :root {
-      --bg0: #f8fbff;
-      --bg1: #f3f7ff;
-      --bg2: #eaf2ff;
+      --bg0: #ffffff;
+      --bg1: #ffffff;
+      --bg2: #ffffff;
       --card: #ffffff;
-      --ink: #111827;
-      --muted: #4b5563;
-      --line: #d1d5db;
-      --primary: #1d4ed8;
-      --primary-2: #1e40af;
+      --ink: #000000;
+      --muted: #000000;
+      --line: #d4d4d4;
+      --primary: #ffffff;
+      --primary-2: #f5f5f5;
       --good: #15803d;
       --warn: #b45309;
       --bad: #b91c1c;
@@ -25,21 +25,14 @@
 
     body {
       margin: 0;
-      color: var(--ink);
+      color: #000000;
       font-family: "Space Grotesk", "Avenir Next", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(900px 520px at 8% -5%, #c7ddff 0%, transparent 60%),
-                  radial-gradient(900px 520px at 92% -5%, #e3d3ff 0%, transparent 60%),
-                  linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 42%, var(--bg0) 100%);
+      background: #ffffff;
       min-height: 100vh;
     }
 
     .aurora {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: radial-gradient(600px 300px at 25% 20%, rgba(37, 99, 235, 0.08), transparent 65%),
-                  radial-gradient(600px 300px at 75% 15%, rgba(124, 58, 237, 0.08), transparent 65%);
-      animation: drift 10s ease-in-out infinite alternate;
+      display: none;
     }
 
     @keyframes drift {
@@ -56,11 +49,10 @@
     }
 
     .hero, .panel {
-      border: 1px solid rgba(148, 163, 184, 0.55);
+      border: 1px solid var(--line);
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      background: #ffffff;
+      box-shadow: none;
     }
 
     .hero { padding: 22px; }
@@ -69,7 +61,7 @@
       margin: 0;
       font-size: 1.65rem;
       letter-spacing: -0.01em;
-      color: #0f172a;
+      color: #000000;
     }
 
     .sub {
@@ -91,8 +83,8 @@
       border-radius: 999px;
       padding: 4px 10px;
       font-size: 0.8rem;
-      color: #334155;
-      background: #f8fbff;
+      color: #000000;
+      background: #ffffff;
     }
 
     .progress-wrap {
@@ -103,14 +95,14 @@
       display: flex;
       justify-content: space-between;
       font-size: 0.8rem;
-      color: #475569;
+      color: #000000;
       margin-bottom: 6px;
     }
 
     .progress {
       height: 10px;
       border-radius: 999px;
-      background: rgba(148, 163, 184, 0.35);
+      background: #efefef;
       overflow: hidden;
     }
 
@@ -118,7 +110,7 @@
       height: 100%;
       width: 0%;
       transition: width 260ms ease;
-      background: linear-gradient(90deg, #38bdf8 0%, #2563eb 70%, #7c3aed 100%);
+      background: #000000;
     }
 
     .panel {
@@ -167,8 +159,8 @@
 
     label.opt:hover {
       transform: translateY(-1px);
-      border-color: #93c5fd;
-      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.12);
+      border-color: #a3a3a3;
+      box-shadow: none;
     }
 
     label.opt input { margin-top: 3px; }
@@ -182,28 +174,28 @@
     }
 
     button {
-      border: 1px solid #1d4ed8;
+      border: 1px solid #000000;
       border-radius: 10px;
       padding: 9px 13px;
       font-weight: 700;
       font-size: 0.9rem;
       cursor: pointer;
-      background: var(--primary);
-      color: #fff;
+      background: #ffffff;
+      color: #000000;
       transition: transform 100ms ease, background 120ms ease;
     }
 
-    button:hover { transform: translateY(-1px); background: var(--primary-2); }
+    button:hover { transform: translateY(-1px); background: #f5f5f5; }
     button:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
 
     button.secondary {
       background: #fff;
-      color: #0f172a;
+      color: #000000;
       border-color: var(--line);
     }
 
     .status {
-      color: #475569;
+      color: #000000;
       font-size: 0.9rem;
       margin-left: 2px;
     }
@@ -275,7 +267,7 @@
       border-radius: 12px;
       padding: 14px;
       background: #fff;
-      color: #0f172a;
+      color: #000000;
       display: none;
     }
 
@@ -333,12 +325,12 @@
 
     .update-box {
       margin-top: 16px;
-      border: 1px solid rgba(148, 163, 184, 0.65);
+      border: 1px solid var(--line);
       border-radius: 12px;
       padding: 14px;
-      background: #f9fbff;
+      background: #ffffff;
       display: none;
-      color: #0f172a;
+      color: #000000;
     }
 
     .update-box h3 { margin: 0 0 8px; font-size: 0.98rem; }
@@ -346,14 +338,14 @@
     .update-box textarea {
       width: 100%;
       min-height: 180px;
-      border: 1px solid rgba(148, 163, 184, 0.65);
+      border: 1px solid var(--line);
       border-radius: 8px;
       padding: 11px;
       resize: vertical;
       font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
       font-size: 0.84rem;
       background: #ffffff;
-      color: #0f172a;
+      color: #000000;
     }
 
     .update-actions {
@@ -386,7 +378,7 @@
       display: block;
     }
 
-    a { color: #1d4ed8; }
+    a { color: #000000; }
 
     @media (min-width: 760px) {
       .opts { grid-template-columns: 1fr 1fr; }
