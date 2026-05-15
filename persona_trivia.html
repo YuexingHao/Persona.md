@@ -175,7 +175,8 @@
     <section class="panel">
       <form id="quiz"></form>
       <div class="controls">
-        <button id="submitBtn" type="button">Submit Duel</button>
+        <button id="prevBtn" class="secondary" type="button">Previous</button>
+        <button id="nextBtn" type="button">Next Question</button>
         <button id="resetBtn" class="secondary" type="button">Reset</button>
         <span id="status" class="status"></span>
       </div>
@@ -212,40 +213,52 @@
     const quiz = document.getElementById("quiz");
     const statusEl = document.getElementById("status");
     const resultEl = document.getElementById("result");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const userAnswers = Array(QUESTIONS.length).fill(null);
+    let current = 0;
 
     function render() {
+      const item = QUESTIONS[current];
       quiz.innerHTML = "";
-      QUESTIONS.forEach((item, i) => {
-        const block = document.createElement("div");
-        block.className = "q";
-        block.innerHTML = `
-          <div class="qhead">Q${i + 1}. ${item.q}</div>
-          <div class="opts">
-            <label class="opt"><input type="radio" name="q${i}" value="0"> <span>${item.o[0]}</span></label>
-            <label class="opt"><input type="radio" name="q${i}" value="1"> <span>${item.o[1]}</span></label>
-          </div>
-        `;
-        quiz.appendChild(block);
+      const block = document.createElement("div");
+      block.className = "q";
+      block.innerHTML = `
+        <div class="qhead">Q${current + 1}. ${item.q}</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="current-q" value="0"> <span>${item.o[0]}</span></label>
+          <label class="opt"><input type="radio" name="current-q" value="1"> <span>${item.o[1]}</span></label>
+        </div>
+      `;
+      quiz.appendChild(block);
+
+      const saved = userAnswers[current];
+      if (saved !== null) {
+        const chosen = quiz.querySelector(`input[name="current-q"][value="${saved}"]`);
+        if (chosen) chosen.checked = true;
+      }
+
+      quiz.querySelectorAll('input[name="current-q"]').forEach(el => {
+        el.addEventListener("change", () => {
+          userAnswers[current] = Number(el.value);
+          statusEl.textContent = `Question ${current + 1}/${QUESTIONS.length}`;
+        });
       });
-      statusEl.textContent = "";
+
+      prevBtn.disabled = current === 0;
+      nextBtn.textContent = current === QUESTIONS.length - 1 ? "Finish Duel" : "Next Question";
+      statusEl.textContent = `Question ${current + 1}/${QUESTIONS.length}`;
       resultEl.style.display = "none";
       resultEl.innerHTML = "";
     }
 
-    function getUserAnswers() {
-      const out = [];
-      for (let i = 0; i < QUESTIONS.length; i += 1) {
-        const chosen = document.querySelector(`input[name=\"q${i}\"]:checked`);
-        if (!chosen) return null;
-        out.push(Number(chosen.value));
-      }
-      return out;
+    function allAnswered() {
+      return userAnswers.every(v => v !== null);
     }
 
     function duel() {
-      const user = getUserAnswers();
-      if (!user) {
-        statusEl.textContent = "Please answer all 15 questions before submitting.";
+      if (!allAnswered()) {
+        statusEl.textContent = "Please answer all 15 questions before finishing.";
         return;
       }
 
@@ -255,9 +268,9 @@
       let alignment = 0;
 
       for (let i = 0; i < QUESTIONS.length; i += 1) {
-        if (user[i] === key[i]) userScore += 1;
+        if (userAnswers[i] === key[i]) userScore += 1;
         if (AGENT[i] === key[i]) agentScore += 1;
-        if (user[i] === AGENT[i]) alignment += 1;
+        if (userAnswers[i] === AGENT[i]) alignment += 1;
       }
 
       let winner = "Tie";
@@ -266,9 +279,9 @@
       else if (userScore < agentScore) { winner = "Persona Agent Wins"; cls = "lose"; }
 
       const rows = QUESTIONS.map((q, i) => {
-        const u = q.o[user[i]];
+        const u = q.o[userAnswers[i]];
         const a = q.o[AGENT[i]];
-        const okU = user[i] === q.key ? "✓" : "✗";
+        const okU = userAnswers[i] === q.key ? "✓" : "✗";
         const okA = AGENT[i] === q.key ? "✓" : "✗";
         return `<div class=\"row\">Q${i + 1}: User ${okU} (${u}) | Agent ${okA} (${a})</div>`;
       }).join("");
@@ -283,11 +296,33 @@
         <div class="detail">${rows}</div>
       `;
       resultEl.style.display = "block";
-      statusEl.textContent = "";
+      statusEl.textContent = "Duel complete.";
     }
 
-    document.getElementById("submitBtn").addEventListener("click", duel);
-    document.getElementById("resetBtn").addEventListener("click", render);
+    nextBtn.addEventListener("click", () => {
+      if (userAnswers[current] === null) {
+        statusEl.textContent = `Please pick one option for Question ${current + 1}.`;
+        return;
+      }
+      if (current === QUESTIONS.length - 1) {
+        duel();
+        return;
+      }
+      current += 1;
+      render();
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (current === 0) return;
+      current -= 1;
+      render();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      current = 0;
+      for (let i = 0; i < userAnswers.length; i += 1) userAnswers[i] = null;
+      render();
+    });
 
     render();
   </script>
